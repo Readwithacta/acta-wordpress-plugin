@@ -663,20 +663,15 @@ function acta_settings_page() {
                 ?>
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Change default price</h3>
-                    <p style="margin-bottom: 4px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
-                    <p class="description" style="margin-bottom: 12px;">You can change the default price up to 3 times per day. <?php echo (int) $changes_remaining; ?> changes remaining today.</p>
-                    <?php if ( $changes_remaining > 0 ) : ?>
+                    <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
                     <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <?php wp_nonce_field( 'acta_update_default_price' ); ?>
                         <input type="hidden" name="acta_action" value="update_default_price">
                         <input type="number" id="acta_default_price" name="acta_default_price"
                                value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
-                               min="0.01" step="1.00" class="small-text" style="width: 80px;">
+                               min="0.01" step="any" class="small-text" style="width: 80px;">
                         <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
                     </form>
-                    <?php else : ?>
-                    <p style="margin: 0; color: #666;">Come back tomorrow to change the default price again.</p>
-                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
