@@ -20,25 +20,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 //       WP.org handles updates natively; this block is only for direct distribution.
 
 add_filter( 'pre_set_site_transient_update_plugins', 'acta_dev_check_for_updates' );
+add_filter( 'site_transient_update_plugins', 'acta_dev_check_for_updates' );
 function acta_dev_check_for_updates( $transient ) {
-    if ( empty( $transient->checked ) ) {
+    if ( ! is_object( $transient ) || empty( $transient->checked ) ) {
         return $transient;
     }
-    $response = wp_remote_get(
-        'https://api.readwithacta.com/api/v1/public/plugin/acta-content-dev/update-info.json',
-        array( 'timeout' => 10, 'headers' => array( 'Accept' => 'application/json' ) )
-    );
-    if ( is_wp_error( $response ) ) {
-        return $transient;
+    $data = get_site_transient( 'acta_dev_update_data' );
+    if ( false === $data ) {
+        $response = wp_remote_get(
+            'https://api.readwithacta.com/api/v1/public/plugin/acta-content-dev/update-info.json',
+            array( 'timeout' => 10, 'headers' => array( 'Accept' => 'application/json' ) )
+        );
+        if ( is_wp_error( $response ) ) {
+            return $transient;
+        }
+        $data = json_decode( wp_remote_retrieve_body( $response ) );
+        if ( ! empty( $data->version ) ) {
+            set_site_transient( 'acta_dev_update_data', $data, 6 * HOUR_IN_SECONDS );
+        }
     }
-    $data = json_decode( wp_remote_retrieve_body( $response ) );
     if ( empty( $data->version ) || empty( $data->download_url ) ) {
         return $transient;
     }
+    $plugin_basename = plugin_basename( __FILE__ );
     if ( version_compare( $data->version, ACTA_DEV_PLUGIN_VERSION, '>' ) ) {
-        $transient->response[ plugin_basename( __FILE__ ) ] = (object) array(
+        $transient->response[ $plugin_basename ] = (object) array(
             'slug'        => 'acta-content-dev',
-            'plugin'      => plugin_basename( __FILE__ ),
+            'plugin'      => $plugin_basename,
             'new_version' => $data->version,
             'url'         => 'https://readwithacta.com',
             'package'     => $data->download_url,
