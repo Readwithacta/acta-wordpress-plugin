@@ -6,11 +6,31 @@ Guidelines for AI coding assistants working in this repository.
 
 ## Git & GitHub
 
-- **Never push to GitHub.** All git operations stay local. Commit, tag, and stage as needed — always stop short of `git push`. The developer reviews and pushes manually.
+- **Never push to GitHub.** All git operations stay local. Commit, stage, and prepare as needed — always stop short of `git push`. The developer reviews and pushes manually.
 - Do not amend existing commits. Create new commits for follow-up changes.
 - Do not force-push, hard reset, or run any destructive git operation unless explicitly instructed.
 - Stage specific files by name; avoid `git add -A` or `git add .`.
 - Do not create or publish GitHub Releases directly.
+
+### Branch workflow
+
+- **`develop`** — active development branch. Push freely here; nothing is triggered.
+- **`main`** — release branch. Every push to `main` triggers a release automatically.
+
+To release:
+```bash
+git push origin develop:main
+```
+
+That's the only release command. No keywords, no version numbers, no manual steps.
+
+### How versioning works
+
+The CI workflow generates a **CalVer** version from the UTC build timestamp (e.g. `2026.03.04.1423`) and stamps it into the plugin files and `readme.txt` **during the build only** — it is never committed back to the repo. This means:
+
+- Your local files always stay clean — no bot commits, no rebasing required.
+- The released ZIPs contain the correct version.
+- `readme.txt` in the source will show a slightly older `Stable tag`; that's expected.
 
 ---
 
@@ -107,7 +127,8 @@ The following rules apply directly to WordPress.org submission compliance.
 - `acta-content.php` — production plugin entry point.
 - `lib/` — vendored libraries. Do not modify files inside `lib/` directly.
 - `.github/workflows/` — CI release automation. Do not modify without explicit instruction; changes here affect versioning and asset publishing.
-- `CHANGELOG.md` — auto-generated during release. Do not edit manually.
+- `CHANGELOG.md` — manually maintained release notes. Update when making notable changes.
+- Release notes on GitHub are auto-generated from commit messages by the CI workflow.
 
 ---
 
