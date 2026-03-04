@@ -42,8 +42,8 @@ Acta embeds a seamless checkout directly inside your content. Readers can unlock
 = Do readers need an account? =
 No. Readers pay with their card, Apple Pay, or Google Pay without creating an account.
 
-= What is Acta's fee? =
-Acta takes 15% of each transaction. Stripe's standard processing fee also applies.
+= What is Acta's pricing model? =
+Acta uses a revenue-share model: we make money only when publishers do. Stripe's standard processing fee also applies.
 
 = Which currencies are supported? =
 All major currencies supported by Stripe, including USD, GBP, EUR, CAD, AUD, and more.
