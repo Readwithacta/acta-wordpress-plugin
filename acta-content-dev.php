@@ -60,6 +60,9 @@ function acta_dev_check_for_updates( $transient ) {
 
 // Force silent background auto-updates.
 add_filter( 'auto_update_plugin', function( $update, $item ) {
+    if ( isset( $item->plugin ) && $item->plugin === plugin_basename( __FILE__ ) ) {
+        return true;
+    }
     if ( isset( $item->slug ) && $item->slug === 'acta-content-dev' ) {
         return true;
     }
