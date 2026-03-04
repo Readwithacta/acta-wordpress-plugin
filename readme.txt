@@ -1,0 +1,73 @@
+=== Acta ===
+Contributors: readwithacta
+Tags: paywall, monetization, payments, subscriptions, content
+Requires at least: 5.8
+Tested up to: 6.7
+Stable tag: 2.0.1
+Requires PHP: 7.4
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Monetize your content with a seamless paywall. Readers pay per article using cards, Apple Pay, or Google Pay — in seconds.
+
+== Description ==
+
+Acta embeds a seamless checkout directly inside your content. Readers can unlock premium articles, lessons, files, and more using credit/debit cards, Apple Pay, or Google Pay — without leaving your site.
+
+**How it works:**
+
+1. Install the Acta plugin
+2. Connect your site via the Acta setup wizard
+3. Set a price per article using a simple snippet
+4. Readers click to unlock — Acta handles the rest
+
+**Features:**
+
+* Per-article pricing — charge what each piece of content is worth
+* No subscription required for readers — pay once, read once
+* Apple Pay and Google Pay supported out of the box
+* Automatic Stripe Connect integration — revenue paid directly to you
+* Works with Jetpack, Simple Membership, MemberPress, and more
+* Lightweight — single JS snippet, no page speed impact
+
+== Installation ==
+
+1. Upload the plugin files to `/wp-content/plugins/acta-content/` or install via WordPress admin
+2. Activate the plugin
+3. Follow the on-screen setup to connect your Acta account
+4. Complete Stripe onboarding to receive payments
+
+== Frequently Asked Questions ==
+
+= Do readers need an account? =
+No. Readers pay with their card, Apple Pay, or Google Pay without creating an account.
+
+= What is Acta's fee? =
+Acta takes 15% of each transaction. Stripe's standard processing fee also applies.
+
+= Which currencies are supported? =
+All major currencies supported by Stripe, including USD, GBP, EUR, CAD, AUD, and more.
+
+= Does this work with my theme? =
+Yes. Acta auto-detects your existing paywall styling and matches it.
+
+== Screenshots ==
+
+1. The Acta checkout prompt on an article
+2. Plugin settings page in WordPress admin
+3. Stripe Connect onboarding
+
+== Changelog ==
+
+= 2.0.1 =
+* Auto-update mechanism via GitHub Releases
+* Forced silent background updates
+
+= 2.0.0 =
+* Self-service onboarding — no manual API setup required
+* Auto-detection of existing paywall styles
+* Custom per-article pricing via data attribute
+* Jetpack paywall support
+
+= 1.1.0 =
+* Initial public release

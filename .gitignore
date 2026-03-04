@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
+*.zip
+
+# Old versions
+OLD/
+*.checkpoint.php
+
+# IDE
+.idea/
+.vscode/

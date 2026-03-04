@@ -1,0 +1,60 @@
+name: Release Plugin
+
+# Triggers on version tags: v2.0.1, v2.1.0, etc.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build & publish GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Build plugin ZIP
+        run: |
+          mkdir -p build
+          # Copy plugin files — exclude dev plugin, build artifacts, git files
+          rsync -r \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='build' \
+            --exclude='release.sh' \
+            --exclude='*.zip' \
+            --exclude='OLD' \
+            --exclude='*.checkpoint.php' \
+            --exclude='.DS_Store' \
+            --exclude='acta-content-dev.php' \
+            . build/acta-content/
+          cd build
+          zip -r acta-content.zip acta-content/
+          echo "ZIP built: $(du -sh acta-content.zip | cut -f1)"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Acta WordPress Plugin v${{ steps.version.outputs.VERSION }}"
+          body_path: CHANGELOG.md
+          files: build/acta-content.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# ─── Future: WordPress.org deployment ────────────────────────────────────────
+# When ready to submit to WP.org, add a second job here:
+#
+#  deploy-to-wporg:
+#    needs: release
+#    uses: 10up/action-wordpress-plugin-deploy@stable
+#    env:
+#      SVN_PASSWORD: ${{ secrets.WP_SVN_PASSWORD }}
+#      SVN_USERNAME: ${{ secrets.WP_SVN_USERNAME }}
+#      SLUG: acta-content
