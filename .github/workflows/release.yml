@@ -103,6 +103,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # ── Notify Acta update server ────────────────────────────────────────────
+      # Publishers check api.readwithacta.com instead of GitHub — no rate limits.
+      # Requires PLUGIN_UPDATE_WEBHOOK_SECRET set in GitHub repo secrets.
+      - name: Notify Acta update server
+        run: |
+          V="${{ steps.version.outputs.VERSION }}"
+          BASE="https://github.com/Readwithacta/acta-wordpress-plugin/releases/download/$V"
+          SECRET="${{ secrets.PLUGIN_UPDATE_WEBHOOK_SECRET }}"
+
+          curl -sf -X POST "https://api.readwithacta.com/api/v1/plugin-updates/acta-content" \
+            -H "Authorization: Bearer $SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"version\":\"$V\",\"download_url\":\"$BASE/acta-content.zip\"}"
+
+          curl -sf -X POST "https://api.readwithacta.com/api/v1/plugin-updates/acta-content-dev" \
+            -H "Authorization: Bearer $SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"version\":\"${V}-dev\",\"download_url\":\"$BASE/acta-content-dev.zip\"}"
+
 # ─── Future: WordPress.org deployment ────────────────────────────────────────
 # When ready to submit to WP.org, add a second job here:
 #

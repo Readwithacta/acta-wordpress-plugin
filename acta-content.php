@@ -15,19 +15,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ─── Auto-updates ─────────────────────────────────────────────────────────────
-// Checks GitHub Releases for new versions and silently installs them.
-// Remove this block once the plugin is published on WordPress.org.
+// Checks Acta's own update server for new versions and silently installs them.
+// The update server is notified by GitHub Actions after each release — no GitHub
+// API calls from publishers, no rate limits.
+// TODO: Remove this entire block when the plugin is published on WordPress.org.
+//       WP.org handles updates natively; this block is only for direct distribution.
 
 require_once plugin_dir_path( __FILE__ ) . 'lib/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $acta_update_checker = PucFactory::buildUpdateChecker(
-    'https://github.com/Readwithacta/acta-wordpress-plugin/',
+    'https://api.readwithacta.com/api/v1/public/plugin/acta-content/update-info.json',
     __FILE__,
     'acta-content'
 );
-$acta_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content\.zip/' );
-$acta_update_checker->setCheckPeriod( 6 ); // Check for updates every 6 hours
+$acta_update_checker->setCheckPeriod( 6 ); // Check every 6 hours
 
 // Force silent background auto-updates — no publisher action needed.
 // This filter stays even after moving to WordPress.org.
