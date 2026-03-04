@@ -14,6 +14,27 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+// ─── Auto-updates ─────────────────────────────────────────────────────────────
+// Same workflow as production — checks GitHub Releases for acta-content-dev.zip.
+
+require_once plugin_dir_path( __FILE__ ) . 'lib/plugin-update-checker/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$acta_dev_update_checker = PucFactory::buildUpdateChecker(
+    'https://github.com/Readwithacta/acta-wordpress-plugin/',
+    __FILE__,
+    'acta-content-dev'
+);
+$acta_dev_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content-dev\.zip/' );
+
+// Force silent background auto-updates.
+add_filter( 'auto_update_plugin', function( $update, $item ) {
+    if ( isset( $item->slug ) && $item->slug === 'acta-content-dev' ) {
+        return true;
+    }
+    return $update;
+}, 10, 2 );
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 define( 'ACTA_DEV_PLUGIN_VERSION', '2.0.1-dev' );

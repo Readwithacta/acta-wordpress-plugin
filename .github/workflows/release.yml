@@ -22,14 +22,16 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build plugin ZIP
+      - name: Build plugin ZIPs
         run: |
           mkdir -p build
-          # Copy plugin files — exclude dev plugin, build artifacts, git files
+
+          # ── Production ZIP (acta-content.zip) ──────────────────────────────
           rsync -r \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='build' \
+            --exclude='build-dev.sh' \
             --exclude='release.sh' \
             --exclude='*.zip' \
             --exclude='OLD' \
@@ -37,16 +39,33 @@ jobs:
             --exclude='.DS_Store' \
             --exclude='acta-content-dev.php' \
             . build/acta-content/
-          cd build
-          zip -r acta-content.zip acta-content/
-          echo "ZIP built: $(du -sh acta-content.zip | cut -f1)"
+          cd build && zip -r acta-content.zip acta-content/ && cd ..
+          echo "Prod ZIP: $(du -sh build/acta-content.zip | cut -f1)"
+
+          # ── Dev ZIP (acta-content-dev.zip) ─────────────────────────────────
+          rsync -r \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='build' \
+            --exclude='build-dev.sh' \
+            --exclude='release.sh' \
+            --exclude='*.zip' \
+            --exclude='OLD' \
+            --exclude='*.checkpoint.php' \
+            --exclude='.DS_Store' \
+            --exclude='acta-content.php' \
+            . build/acta-content-dev/
+          cd build && zip -r acta-content-dev.zip acta-content-dev/ && cd ..
+          echo "Dev ZIP:  $(du -sh build/acta-content-dev.zip | cut -f1)"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "Acta WordPress Plugin v${{ steps.version.outputs.VERSION }}"
           body_path: CHANGELOG.md
-          files: build/acta-content.zip
+          files: |
+            build/acta-content.zip
+            build/acta-content-dev.zip
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
