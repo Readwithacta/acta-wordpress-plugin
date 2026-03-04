@@ -635,6 +635,25 @@ function acta_dev_settings_page() {
                     <p style="margin-bottom: 0;"><strong>Publisher ID:</strong> <code style="font-size: 14px;"><?php echo esc_html( $publisher_id ); ?></code></p>
                 </div>
 
+                <?php
+                $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
+                    ? acta_dev_fetch_publisher_info( $publisher_id, $secret, home_url() )
+                    : null;
+                $current_default = $publisher_info['articlePrice'] ?? 2.00;
+                ?>
+                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">Change default price</h3>
+                    <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
+                    <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <?php wp_nonce_field( 'acta_dev_update_default_price' ); ?>
+                        <input type="hidden" name="acta_dev_action" value="update_default_price">
+                        <input type="number" id="acta_dev_default_price" name="acta_dev_default_price"
+                               value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
+                               min="0.01" step="any" class="small-text" style="width: 80px;">
+                        <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
+                    </form>
+                </div>
+
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Set a custom price on an article</h3>
                     <p>By default, all articles use your default price. To set a different price on a specific article, add a <strong>Custom HTML</strong> block in the post editor (before the paywall break) with this snippet:</p>
@@ -674,26 +693,6 @@ function acta_dev_settings_page() {
                     </script>
                 </div>
 
-                <?php
-                $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
-                    ? acta_dev_fetch_publisher_info( $publisher_id, $secret, home_url() )
-                    : null;
-                $current_default   = $publisher_info['articlePrice'] ?? 2.00;
-                $changes_remaining = $publisher_info['changesRemaining'] ?? 3;
-                ?>
-                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0;">Change default price</h3>
-                    <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
-                    <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <?php wp_nonce_field( 'acta_dev_update_default_price' ); ?>
-                        <input type="hidden" name="acta_dev_action" value="update_default_price">
-                        <input type="number" id="acta_dev_default_price" name="acta_dev_default_price"
-                               value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
-                               min="0.01" step="any" class="small-text" style="width: 80px;">
-                        <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
-                    </form>
-                </div>
-
                 <!-- Danger zone: Reset button -->
                 <hr style="margin-top: 20px;">
                 <details style="margin-top: 12px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
@@ -717,15 +716,17 @@ function acta_dev_settings_page() {
 
 // ─── Frontend: inject Acta JS snippet ────────────────────────────────────────
 
-add_action( 'wp_head', 'acta_dev_enqueue_frontend_script' );
+add_action( 'wp_enqueue_scripts', 'acta_dev_enqueue_frontend_script' );
 function acta_dev_enqueue_frontend_script() {
     $publisher_id = get_option( ACTA_DEV_PUBLISHER_ID_KEY, '' );
     if ( empty( $publisher_id ) ) {
         return;
     }
 
+    wp_enqueue_script( 'stripe-js', 'https://js.stripe.com/v3/', array(), null, false );
+
     $script_url = rtrim( ACTA_DEV_BACKEND_URL, '/' ) . '/api/v1/public/static/' . urlencode( $publisher_id ) . '.js';
-    echo '<script src="' . esc_url( $script_url ) . '" crossorigin="anonymous"></script>' . "\n";
+    wp_enqueue_script( 'acta-dev-frontend', $script_url, array( 'stripe-js' ), false, false );
 }
 
 // ─── REST API endpoint ────────────────────────────────────────────────────────
