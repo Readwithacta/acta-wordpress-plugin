@@ -375,6 +375,7 @@ function acta_settings_page() {
     ?>
     <div class="wrap">
         <h1>Acta Settings</h1>
+        <p style="color: #1d2327; font-size: 15px; margin-bottom: 8px;">Acta is a pay-per-content solution for publishers and creators.</p>
         <p style="color: #666;">Version <?php echo esc_html( ACTA_PLUGIN_VERSION ); ?></p>
 
         <?php if ( $conn_status === 'not_registered' || empty( $conn_status ) ) : ?>

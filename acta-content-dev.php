@@ -383,6 +383,7 @@ function acta_dev_settings_page() {
     ?>
     <div class="wrap">
         <h1>Acta Settings <span style="background: #d63638; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 3px; margin-left: 8px; vertical-align: middle;">DEV</span></h1>
+        <p style="color: #1d2327; font-size: 15px; margin-bottom: 8px;">Acta is a pay-per-content solution for publishers and creators.</p>
         <p style="color: #d63638; font-weight: bold;">Development mode &mdash; using Stripe test keys</p>
         <p style="color: #666;">Version <?php echo esc_html( ACTA_DEV_PLUGIN_VERSION ); ?></p>
 
