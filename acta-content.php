@@ -332,6 +332,81 @@ function acta_connect_to_backend( $publisher_id, $plugin_endpoint, $plugin_secre
     );
 }
 
+/**
+ * Fetch publisher info (article price, rate limit) from Acta backend.
+ *
+ * @return array{ articlePrice: float, changesRemaining: int }|null
+ */
+function acta_fetch_publisher_info( $publisher_id, $secret, $site_url ) {
+    if ( empty( $publisher_id ) || empty( $secret ) ) {
+        return null;
+    }
+    $url = add_query_arg(
+        array(
+            'publisherId' => $publisher_id,
+            'key'         => $secret,
+            'siteUrl'     => $site_url,
+        ),
+        rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-publisher-info'
+    );
+    $response = wp_remote_get( $url, array( 'timeout' => 10 ) );
+    if ( is_wp_error( $response ) ) {
+        return null;
+    }
+    $code = wp_remote_retrieve_response_code( $response );
+    if ( $code !== 200 ) {
+        return null;
+    }
+    $body = json_decode( wp_remote_retrieve_body( $response ), true );
+    if ( ! is_array( $body ) || ! isset( $body['articlePrice'] ) ) {
+        return null;
+    }
+    return array(
+        'articlePrice'      => (float) $body['articlePrice'],
+        'changesRemaining'  => isset( $body['changesRemaining'] ) ? (int) $body['changesRemaining'] : 3,
+    );
+}
+
+/**
+ * Update default article price via Acta backend.
+ *
+ * @return array{ success: bool, message: string, articlePrice?: float, changesRemaining?: int }
+ */
+function acta_update_default_price( $publisher_id, $secret, $site_url, $article_price ) {
+    $url  = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-update-article-price';
+    $body = array(
+        'publisherId' => $publisher_id,
+        'key'         => $secret,
+        'siteUrl'     => $site_url,
+        'articlePrice' => (float) $article_price,
+    );
+    $response = wp_remote_post( $url, array(
+        'timeout' => 15,
+        'headers' => array( 'Content-Type' => 'application/json' ),
+        'body'    => wp_json_encode( $body ),
+    ) );
+    if ( is_wp_error( $response ) ) {
+        return array(
+            'success' => false,
+            'message' => $response->get_error_message(),
+        );
+    }
+    $code = wp_remote_retrieve_response_code( $response );
+    $body = json_decode( wp_remote_retrieve_body( $response ), true );
+    if ( $code === 200 && ! empty( $body['success'] ) ) {
+        return array(
+            'success'          => true,
+            'message'          => 'Default price updated.',
+            'articlePrice'     => $body['articlePrice'] ?? $article_price,
+            'changesRemaining' => $body['changesRemaining'] ?? 0,
+        );
+    }
+    return array(
+        'success' => false,
+        'message' => $body['error'] ?? ( 'HTTP ' . $code ),
+    );
+}
+
 // ─── Settings page renderer ─────────────────────────────────────────────────
 
 function acta_settings_page() {
@@ -388,6 +463,24 @@ function acta_settings_page() {
         $conn_status = 'live';
         $stripe_url  = '';
         echo '<div class="notice notice-success"><p>' . esc_html__( 'Status updated. If your Stripe setup is complete, you\'re live!', 'acta-content' ) . '</p></div>';
+    }
+
+    // Handle "Update default price"
+    if (
+        $conn_status === 'live' &&
+        isset( $_POST['acta_action'] ) &&
+        $_POST['acta_action'] === 'update_default_price' &&
+        check_admin_referer( 'acta_update_default_price' )
+    ) {
+        $new_price = floatval( wp_unslash( $_POST['acta_default_price'] ?? 0 ) );
+        if ( $new_price > 0 ) {
+            $result = acta_update_default_price( $publisher_id, $secret, home_url(), $new_price );
+            if ( $result['success'] ) {
+                echo '<div class="notice notice-success"><p>' . esc_html__( 'Default price updated to ', 'acta-content' ) . esc_html( number_format( $result['articlePrice'], 2 ) ) . '.</p></div>';
+            } else {
+                echo '<div class="notice notice-error"><p>' . esc_html( $result['message'] ) . '</p></div>';
+            }
+        }
     }
 
     // ── Render the settings page ─────────────────────────────────────────────
@@ -551,6 +644,31 @@ function acta_settings_page() {
                         }
                     })();
                     </script>
+                </div>
+
+                <?php
+                $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
+                    ? acta_fetch_publisher_info( $publisher_id, $secret, home_url() )
+                    : null;
+                $current_default = $publisher_info['articlePrice'] ?? 2.00;
+                $changes_remaining = $publisher_info['changesRemaining'] ?? 3;
+                ?>
+                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">Change default price</h3>
+                    <p style="margin-bottom: 4px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
+                    <p class="description" style="margin-bottom: 12px;">You can change the default price up to 3 times per day. <?php echo (int) $changes_remaining; ?> changes remaining today.</p>
+                    <?php if ( $changes_remaining > 0 ) : ?>
+                    <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <?php wp_nonce_field( 'acta_update_default_price' ); ?>
+                        <input type="hidden" name="acta_action" value="update_default_price">
+                        <input type="number" id="acta_default_price" name="acta_default_price"
+                               value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
+                               min="0.01" step="1.00" class="small-text" style="width: 80px;">
+                        <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
+                    </form>
+                    <?php else : ?>
+                    <p style="margin: 0; color: #666;">Come back tomorrow to change the default price again.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
