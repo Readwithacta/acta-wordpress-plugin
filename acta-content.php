@@ -618,6 +618,25 @@ function acta_settings_page() {
                     <p style="margin-bottom: 0;"><strong>Publisher ID:</strong> <code style="font-size: 14px;"><?php echo esc_html( $publisher_id ); ?></code></p>
                 </div>
 
+                <?php
+                $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
+                    ? acta_fetch_publisher_info( $publisher_id, $secret, home_url() )
+                    : null;
+                $current_default = $publisher_info['articlePrice'] ?? 2.00;
+                ?>
+                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">Change default price</h3>
+                    <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
+                    <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <?php wp_nonce_field( 'acta_update_default_price' ); ?>
+                        <input type="hidden" name="acta_action" value="update_default_price">
+                        <input type="number" id="acta_default_price" name="acta_default_price"
+                               value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
+                               min="0.01" step="any" class="small-text" style="width: 80px;">
+                        <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
+                    </form>
+                </div>
+
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Set a custom price on an article</h3>
                     <p>By default, all articles use your default price. To set a different price on a specific article, add a <strong>Custom HTML</strong> block in the post editor (before the paywall break) with this snippet:</p>
@@ -656,26 +675,6 @@ function acta_settings_page() {
                     })();
                     </script>
                 </div>
-
-                <?php
-                $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
-                    ? acta_fetch_publisher_info( $publisher_id, $secret, home_url() )
-                    : null;
-                $current_default = $publisher_info['articlePrice'] ?? 2.00;
-                $changes_remaining = $publisher_info['changesRemaining'] ?? 3;
-                ?>
-                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0;">Change default price</h3>
-                    <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
-                    <form method="post" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <?php wp_nonce_field( 'acta_update_default_price' ); ?>
-                        <input type="hidden" name="acta_action" value="update_default_price">
-                        <input type="number" id="acta_default_price" name="acta_default_price"
-                               value="<?php echo esc_attr( number_format( $current_default, 2, '.', '' ) ); ?>"
-                               min="0.01" step="any" class="small-text" style="width: 80px;">
-                        <?php submit_button( 'Update default price', 'primary', 'submit', false ); ?>
-                    </form>
-                </div>
             </div>
         <?php endif; ?>
 
@@ -693,9 +692,15 @@ function acta_enqueue_frontend_script() {
         return;
     }
 
+    // Pre-load Stripe.js as a synchronous blocking script so it is guaranteed to be
+    // defined before the Acta bundle runs.  Without this, Stripe.js is injected
+    // dynamically by the bundle and sometimes races against its own $(document).ready()
+    // callback, causing "Stripe is not defined" intermittently.
+    wp_enqueue_script( 'stripe-js', 'https://js.stripe.com/v3/', array(), null, false );
+
     $script_url = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/static/' . urlencode( $publisher_id ) . '.js';
     // Version is false so WordPress does not append ?ver= — the external server manages caching.
-    wp_enqueue_script( 'acta-frontend', $script_url, array(), false, false );
+    wp_enqueue_script( 'acta-frontend', $script_url, array( 'stripe-js' ), false, false );
 }
 
 // Add crossorigin="anonymous" to the Acta frontend script tag.
