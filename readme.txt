@@ -3,7 +3,7 @@ Contributors: readwithacta
 Tags: paywall, monetization, payments, subscriptions, content
 Requires at least: 5.8
 Tested up to: 6.7
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,9 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 3. Stripe Connect onboarding
 
 == Changelog ==
+
+= 3.0.1 =
+* Version sync patch
 
 = 3.0.0 =
 * Automated release pipeline with semantic versioning
