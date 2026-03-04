@@ -13,7 +13,7 @@ OUTPUT="acta-content-dev.zip"
 # Remove old ZIP if it exists
 if [ -f "$OUTPUT" ]; then
     rm "$OUTPUT"
-    echo "🗑  Removed old $OUTPUT"
+    echo "Removed old $OUTPUT"
 fi
 
 # Build fresh ZIP
@@ -23,7 +23,7 @@ zip -r "$OUTPUT" \
     lib/ \
     --exclude="*.DS_Store"
 
-echo "✅ Built $OUTPUT ($(du -sh $OUTPUT | cut -f1))"
+echo "Built $OUTPUT ($(du -sh $OUTPUT | cut -f1))"
 echo ""
 echo "Upload to WordPress:"
 echo "  WordPress Admin → Plugins → Add New → Upload Plugin → choose $OUTPUT"

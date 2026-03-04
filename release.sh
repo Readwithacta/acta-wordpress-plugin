@@ -22,7 +22,17 @@ if [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
 fi
 
 if [[ -n "$(git status --porcelain)" ]]; then
-    echo "❌ Working directory is not clean. Commit or stash changes first."
+    echo "ERROR: Working directory is not clean. Commit or stash changes first."
+    exit 1
+fi
+
+UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null)
+if [[ -n "$UNPUSHED" ]]; then
+    echo "ERROR: You have unpushed commits. Push them first:"
+    echo ""
+    echo "$UNPUSHED"
+    echo ""
+    echo "Run: git push origin main"
     exit 1
 fi
 
@@ -54,7 +64,7 @@ fi
 sed -i '' "s/ \* Version:.*/ * Version:     $NEW_VERSION/" "$PLUGIN_FILE"
 sed -i '' "s/define( 'ACTA_PLUGIN_VERSION', '.*' );/define( 'ACTA_PLUGIN_VERSION', '$NEW_VERSION' );/" "$PLUGIN_FILE"
 
-echo "✅ Version bumped in $PLUGIN_FILE"
+echo "Version bumped in $PLUGIN_FILE"
 
 # ── Update CHANGELOG.md ───────────────────────────────────────────────────────
 DATE=$(date +%Y-%m-%d)
@@ -80,7 +90,7 @@ git commit -m "Release v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 
 echo ""
-echo "✅ Tagged v$NEW_VERSION"
+echo "Tagged v$NEW_VERSION"
 echo ""
 read -p "Push to GitHub? This will trigger the release workflow. (y/N) " -n 1 -r
 echo ""
@@ -88,7 +98,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     git push origin main
     git push origin "v$NEW_VERSION"
     echo ""
-    echo "🚀 Pushed! GitHub Action will build the ZIP and create the release."
+    echo "Pushed. GitHub Action will build the ZIP and create the release."
     echo "   Check progress: https://github.com/Readwithacta/acta-wordpress-plugin/actions"
     echo "   Release will appear: https://github.com/Readwithacta/acta-wordpress-plugin/releases"
     echo ""
