@@ -3,7 +3,7 @@ Contributors: readwithacta
 Tags: paywall, monetization, payments, subscriptions, content
 Requires at least: 5.8
 Tested up to: 6.7
-Stable tag: 2.0.1
+Stable tag: 3.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -51,6 +51,14 @@ All major currencies supported by Stripe, including USD, GBP, EUR, CAD, AUD, and
 = Does this work with my theme? =
 Yes. Acta auto-detects your existing paywall styling and matches it.
 
+== External Services ==
+
+This plugin connects to the Acta service (https://readwithacta.com) to process payments and deliver content to readers.
+
+* When a publisher completes setup, the plugin sends their site URL, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
+* Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on the publisher's public-facing pages. This file renders the checkout UI for readers.
+* Reader payment transactions are handled by Stripe via the Acta backend. Acta's privacy policy is available at https://readwithacta.com/privacy.
+
 == Screenshots ==
 
 1. The Acta checkout prompt on an article
@@ -59,9 +67,20 @@ Yes. Acta auto-detects your existing paywall styling and matches it.
 
 == Changelog ==
 
-= 2.0.1 =
+= 3.0.0 =
+* Automated release pipeline with semantic versioning
+* Fixed undefined ACTA_MENU_ICON constant
+* Scripts now enqueued via wp_enqueue_script() per WordPress standards
+* Added wp_unslash() to all POST data sanitization
+* Added i18n wrappers to admin notice strings
+* readme.txt external services disclosure added
+
+= 2.0.2 =
 * Auto-update mechanism via GitHub Releases
 * Forced silent background updates
+
+= 2.0.1 =
+* Maintenance release
 
 = 2.0.0 =
 * Self-service onboarding — no manual API setup required

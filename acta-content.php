@@ -46,6 +46,8 @@ define( 'ACTA_STRIPE_URL_KEY', 'acta_stripe_url' );
 define( 'ACTA_CONNECTION_STATUS', 'acta_connection_status' ); // not_registered | registered | live
 define( 'ACTA_ADMIN_PAGE_SLUG', 'acta-content' );
 define( 'ACTA_ACTIVATION_REDIRECT_OPTION', 'acta_do_activation_redirect' );
+// Base64 SVG data URI — works without file path; WordPress blocks external SVG in some hosts.
+define( 'ACTA_MENU_ICON', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAyIiBoZWlnaHQ9IjExNCIgdmlld0JveD0iMCAwIDEwMiAxMTQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xLjc1NzgxIDEwMy4xMjVDMi4zOTI1OCAxMDEuODU1IDMuMDUxNzYgMTAwLjQzOSAzLjczNTM1IDk4Ljg3N0M0LjQxODk1IDk3LjI2NTYgNS4wNTM3MSA5NS41MzIyIDUuNjM5NjUgOTMuNjc2OEw3LjYxNzE5IDg4Ljg0MjhDNi43MzgyOCA4Ny41MjQ0IDUuODM0OTYgODYuMTA4NCA0LjkwNzIzIDg0LjU5NDdDNC4wMjgzMiA4My4wMzIyIDMuMjIyNjYgODEuNDQ1MyAyLjQ5MDIzIDc5LjgzNEMxLjc1NzgxIDc4LjIyMjcgMS4xNDc0NiA3Ni42MTEzIDAuNjU5MTggNzVDMC4yMTk3MjcgNzMuMzg4NyAwIDcxLjgyNjIgMCA3MC4zMTI1QzAgNzAuMjE0OCAwLjM2NjIxMSA3MC4xNDE2IDEuMDk4NjMgNzAuMDkyOEMxLjg3OTg4IDY5Ljk5NTEgMi44MzIwMyA2OS45MjE5IDMuOTU1MDggNjkuODczQzUuMTI2OTUgNjkuODI0MiA2LjM3MjA3IDY5Ljc5OTggNy42OTA0MyA2OS43OTk4QzkuMDU3NjIgNjkuNzUxIDEwLjMwMjcgNjkuNzI2NiAxMS40MjU4IDY5LjcyNjZDMTIuNTk3NyA2OS42Nzc3IDEzLjU0OTggNjkuNjUzMyAxNC4yODIyIDY5LjY1MzNDMTUuMDYzNSA2OS42MDQ1IDE1LjQ1NDEgNjkuNTgwMSAxNS40NTQxIDY5LjU4MDFDMTYuNTc3MSA2Ni42NTA0IDE3LjY3NTggNjMuODY3MiAxOC43NSA2MS4yMzA1QzE5LjgyNDIgNTguNTkzOCAyMC44OTg0IDU1LjkzMjYgMjEuOTcyNyA1My4yNDcxQzIzLjA0NjkgNTAuNTYxNSAyNC4xMjExIDQ3LjgyNzEgMjUuMTk1MyA0NS4wNDM5QzI2LjI2OTUgNDIuMjExOSAyNy4zNDM4IDM5LjE4NDYgMjguNDE4IDM1Ljk2MTlDMzAuNDY4OCAyOS45MDcyIDMyLjQ3MDcgMjQuNTg1IDM0LjQyMzggMTkuOTk1MUMzNi4zNzcgMTUuNDA1MyAzOC4yMDggMTEuMTMyOCAzOS45MTcgNy4xNzc3M0M0MC4xMTIzIDYuNjg5NDUgNDAuNDI5NyA2LjI1IDQwLjg2OTEgNS44NTkzOEM0MS4zNTc0IDUuNDE5OTIgNDEuODcwMSA1LjA1MzcxIDQyLjQwNzIgNC43NjA3NEM0Mi45NDQzIDQuNDY3NzcgNDMuNDU3IDQuMjIzNjMgNDMuOTQ1MyA0LjAyODMyQzQ0LjQ4MjQgMy44MzMwMSA0NC44OTc1IDMuNjg2NTIgNDUuMTkwNCAzLjU4ODg3QzQ1LjM4NTcgMy41NDAwNCA0Ni4xMTgyIDMuMzIwMzEgNDcuMzg3NyAyLjkyOTY5QzQ4LjcwNjEgMi41MzkwNiA1MC4xOTUzIDIuMTI0MDIgNTEuODU1NSAxLjY4NDU3QzUzLjUxNTYgMS4yNDUxMiA1NS4xNTE0IDAuODU0NDkyIDU2Ljc2MjcgMC41MTI2OTVDNTguNDIyOSAwLjE3MDg5OCA1OS43NDEyIDAgNjAuNzE3OCAwSDYyLjAzNjFDNjIuODE3NCAwIDYzLjU0OTggMC4xOTUzMTMgNjQuMjMzNCAwLjU4NTkzOEM2NC45NjU4IDAuOTI3NzM0IDY1LjQ1NDEgMS42MzU3NCA2NS42OTgyIDIuNzA5OTZDNjguMDQyIDguNzE1ODIgNzAuNTMyMiAxNS4yODMyIDczLjE2ODkgMjIuNDEyMUM3NS44NTQ1IDI5LjQ5MjIgNzguNDY2OCAzNy4zMDQ3IDgxLjAwNTkgNDUuODQ5NkM4Mi4zNzMgNTAuNDM5NSA4My43MTU4IDU0Ljc4NTIgODUuMDM0MiA1OC44ODY3Qzg2LjM1MjUgNjIuOTg4MyA4Ny42NzA5IDY2Ljk5MjIgODguOTg5MyA3MC44OTg0QzkwLjMwNzYgNzQuODA0NyA5MS42MjYgNzguNzEwOSA5Mi45NDQzIDgyLjYxNzJDOTQuMzExNSA4Ni41MjM0IDk1LjcwMzEgOTAuNTUxOCA5Ny4xMTkxIDk0LjcwMjFDOTcuNTU4NiA5Ni40NiA5Ny45OTggOTcuODUxNiA5OC40Mzc1IDk4Ljg3N0M5OC45MjU4IDk5LjkwMjMgOTkuMzY1MiAxMDAuNzA4IDk5Ljc1NTkgMTAxLjI5NEMxMDAuMTQ2IDEwMS44OCAxMDAuNDY0IDEwMi4zMTkgMTAwLjcwOCAxMDIuNjEyQzEwMC45NTIgMTAyLjg1NiAxMDEuMDc0IDEwMy4xMjUgMTAxLjA3NCAxMDMuNDE4QzEwMS4wNzQgMTAzLjcxMSAxMDAuNjEgMTA0LjAwNCA5OS42ODI2IDEwNC4yOTdMODMuOTM1NSAxMDkuNDI0QzgyLjc2MzcgMTA5Ljg2MyA4MS41Njc0IDExMC4zMDMgODAuMzQ2NyAxMTAuNzQyQzc5LjEyNiAxMTEuMTgyIDc3Ljk3ODUgMTExLjU3MiA3Ni45MDQzIDExMS45MTRDNzUuODMwMSAxMTIuMjU2IDc0Ljg3NzkgMTEyLjUyNCA3NC4wNDc5IDExMi43MkM3My4yNjY2IDExMi45NjQgNzIuNzA1MSAxMTMuMDg2IDcyLjM2MzMgMTEzLjA4Nkg3MS45MjM4QzcxLjI0MDIgMTEzLjA4NiA3MC43NTIgMTEyLjg2NiA3MC40NTkgMTEyLjQyN0M3MC4xNjYgMTEyLjAzNiA2OS45NzA3IDExMS42NDYgNjkuODczIDExMS4yNTVDNjkuMzg0OCAxMDkuNjQ0IDY4Ljg5NjUgMTA4LjIwMyA2OC40MDgyIDEwNi45MzRDNjcuOTE5OSAxMDUuNjE1IDY3LjQzMTYgMTA0LjMyMSA2Ni45NDM0IDEwMy4wNTJDNjYuNTAzOSAxMDEuNzMzIDY2LjA0IDEwMC4zNDIgNjUuNTUxOCA5OC44NzdDNjUuMTEyMyA5Ny40MTIxIDY0LjY3MjkgOTUuNjc4NyA2NC4yMzM0IDkzLjY3NjhDNjQuMTM1NyA5My40MzI2IDYzLjg2NzIgOTMuMjM3MyA2My40Mjc3IDkzLjA5MDhDNjIuOTg4MyA5Mi44OTU1IDYyLjQ1MTIgOTIuNzQ5IDYxLjgxNjQgOTIuNjUxNEM2MS4yMzA1IDkyLjU1MzcgNjAuNTk1NyA5Mi41MDQ5IDU5LjkxMjEgOTIuNTA0OUM1OS4yMjg1IDkyLjQ1NjEgNTguNTkzOCA5Mi40MzE2IDU4LjAwNzggOTIuNDMxNkM1Ni4xNTIzIDkyLjQzMTYgNTQuNjM4NyA5Mi40NTYxIDUzLjQ2NjggOTIuNTA0OUM1Mi4zNDM4IDkyLjUwNDkgNTEuMzQyOCA5Mi41MjkzIDUwLjQ2MzkgOTIuNTc4MUM0OS41ODUgOTIuNTc4MSA0OC43MzA1IDkyLjYwMjUgNDcuOTAwNCA5Mi42NTE0QzQ3LjExOTEgOTIuNjUxNCA0Ni4xNDI2IDkyLjY1MTQgNDQuOTcwNyA5Mi42NTE0QzQzLjU1NDcgOTIuNjUxNCA0Mi4wODk4IDkyLjY1MTQgNDAuNTc2MiA5Mi42NTE0QzM5LjExMTMgOTIuNjAyNSAzNy43Njg2IDkyLjU1MzcgMzYuNTQ3OSA5Mi41MDQ5TDMyLjM3MyA5Mi4zNTg0QzMxLjEwMzUgOTUuODc0IDI5LjgzNCA5OS4xNjk5IDI4LjU2NDUgMTAyLjI0NkMyNy4yOTQ5IDEwNS4zMjIgMjUuOTI3NyAxMDguNDk2IDI0LjQ2MjkgMTExLjc2OEMyNC4zNjUyIDExMi4xNTggMjQuMTIxMSAxMTIuNDc2IDIzLjczMDUgMTEyLjcyQzIzLjM4ODcgMTEyLjk2NCAyMy4wMjI1IDExMy4wODYgMjIuNjMxOCAxMTMuMDg2QzIyLjMzODkgMTEzLjA4NiAyMi4xNjggMTEzLjA2MiAyMi4xMTkxIDExMy4wMTNDMTcuMzgyOCAxMTEuMzA0IDEzLjQwMzMgMTA5LjYxOSAxMC4xODA3IDEwNy45NTlDNi45NTgwMSAxMDYuMjk5IDQuMTUwMzkgMTA0LjY4OCAxLjc1NzgxIDEwMy4xMjVaTTUxLjEyMyAzNy4yODAzQzQ5Ljk1MTIgNDEuNjI2IDQ4Ljc3OTMgNDUuNTgxMSA0Ny42MDc0IDQ5LjE0NTVDNDYuNDg0NCA1Mi42NjExIDQ1LjQzNDYgNTUuNzg2MSA0NC40NTggNTguNTIwNUM0My41MzAzIDYxLjI1NDkgNDIuNzI0NiA2My41NzQyIDQyLjA0MSA2NS40Nzg1QzQxLjM1NzQgNjcuMzM0IDQwLjg2OTEgNjguNzc0NCA0MC41NzYyIDY5Ljc5OThWNzAuNDU5QzQwLjU3NjIgNzAuNzUyIDQwLjU1MTggNzAuOTQ3MyA0MC41MDI5IDcxLjA0NDlINTguMDgxMUM1Ny41NDM5IDY4LjY1MjMgNTYuOTU4IDY2LjIzNTQgNTYuMzIzMiA2My43OTM5QzU1LjczNzMgNjEuMzUyNSA1NS4xNTE0IDU4Ljc4OTEgNTQuNTY1NCA1Ni4xMDM1QzUzLjk3OTUgNTMuNDE4IDUzLjM5MzYgNTAuNTM3MSA1Mi44MDc2IDQ3LjQ2MDlDNTIuMjIxNyA0NC4zODQ4IDUxLjY2MDIgNDAuOTkxMiA1MS4xMjMgMzcuMjgwM1oiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=' );
 
 // Backend URL: defaults to production. Override in wp-config.php for dev/staging:
 //   define('ACTA_BACKEND_URL', 'https://api.develop.readwithacta.com');
@@ -326,15 +328,15 @@ function acta_settings_page() {
         $_POST['acta_action'] === 'onboard' &&
         check_admin_referer( 'acta_onboard' )
     ) {
-        $email         = sanitize_email( $_POST['acta_email'] ?? '' );
-        $first_name    = sanitize_text_field( $_POST['acta_first_name'] ?? '' );
-        $last_name     = sanitize_text_field( $_POST['acta_last_name'] ?? '' );
-        $country       = sanitize_text_field( $_POST['acta_country'] ?? '' );
-        $currency      = sanitize_text_field( $_POST['acta_currency'] ?? '' );
-        $article_price = floatval( $_POST['acta_article_price'] ?? 0 );
+        $email         = sanitize_email( wp_unslash( $_POST['acta_email'] ?? '' ) );
+        $first_name    = sanitize_text_field( wp_unslash( $_POST['acta_first_name'] ?? '' ) );
+        $last_name     = sanitize_text_field( wp_unslash( $_POST['acta_last_name'] ?? '' ) );
+        $country       = sanitize_text_field( wp_unslash( $_POST['acta_country'] ?? '' ) );
+        $currency      = sanitize_text_field( wp_unslash( $_POST['acta_currency'] ?? '' ) );
+        $article_price = floatval( wp_unslash( $_POST['acta_article_price'] ?? 0 ) );
 
         if ( empty( $email ) || empty( $first_name ) || empty( $last_name ) || empty( $country ) || empty( $currency ) || $article_price <= 0 ) {
-            echo '<div class="notice notice-error"><p>All fields are required. Please fill in your email, name, country, currency, and a price greater than 0.</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html__( 'All fields are required. Please fill in your email, name, country, currency, and a price greater than 0.', 'acta-content' ) . '</p></div>';
         } else {
             $result = acta_onboard_to_backend( $email, $first_name, $last_name, $country, $currency, $article_price );
 
@@ -345,7 +347,7 @@ function acta_settings_page() {
                 $publisher_id = $result['publisherId'];
                 $stripe_url   = $result['stripeOnboardingUrl'];
                 $conn_status  = 'registered';
-                echo '<div class="notice notice-success"><p>Successfully registered with Acta! Complete your Stripe setup below to start accepting payments.</p></div>';
+                echo '<div class="notice notice-success"><p>' . esc_html__( 'Successfully registered! Complete your Stripe setup below to start accepting payments.', 'acta-content' ) . '</p></div>';
             } else {
                 echo '<div class="notice notice-error"><p>' . esc_html( $result['message'] ) . '</p></div>';
             }
@@ -364,7 +366,7 @@ function acta_settings_page() {
         update_option( ACTA_STRIPE_URL_KEY, '' );
         $conn_status = 'live';
         $stripe_url  = '';
-        echo '<div class="notice notice-success"><p>Status updated. If your Stripe setup is complete, you\'re live!</p></div>';
+        echo '<div class="notice notice-success"><p>' . esc_html__( 'Status updated. If your Stripe setup is complete, you\'re live!', 'acta-content' ) . '</p></div>';
     }
 
     // ── Render the settings page ─────────────────────────────────────────────
@@ -538,7 +540,7 @@ function acta_settings_page() {
 
 // ─── Frontend: inject Acta JS snippet ────────────────────────────────────────
 
-add_action( 'wp_head', 'acta_enqueue_frontend_script' );
+add_action( 'wp_enqueue_scripts', 'acta_enqueue_frontend_script' );
 function acta_enqueue_frontend_script() {
     $publisher_id = get_option( ACTA_PUBLISHER_ID_KEY, '' );
     if ( empty( $publisher_id ) ) {
@@ -546,7 +548,17 @@ function acta_enqueue_frontend_script() {
     }
 
     $script_url = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/static/' . urlencode( $publisher_id ) . '.js';
-    echo '<script src="' . esc_url( $script_url ) . '" crossorigin="anonymous"></script>' . "\n";
+    // Version is false so WordPress does not append ?ver= — the external server manages caching.
+    wp_enqueue_script( 'acta-frontend', $script_url, array(), false, false );
+}
+
+// Add crossorigin="anonymous" to the Acta frontend script tag.
+add_filter( 'script_loader_tag', 'acta_add_crossorigin_attr', 10, 2 );
+function acta_add_crossorigin_attr( $tag, $handle ) {
+    if ( 'acta-frontend' === $handle ) {
+        return str_replace( ' src=', ' crossorigin="anonymous" src=', $tag );
+    }
+    return $tag;
 }
 
 // ─── REST API endpoint ────────────────────────────────────────────────────────
