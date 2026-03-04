@@ -573,7 +573,7 @@ function acta_settings_page() {
                             <th scope="row"><label for="acta_article_price">Price per article</label></th>
                             <td>
                                 <input type="number" id="acta_article_price" name="acta_article_price"
-                                       value="2.00" min="0.01" step="1.00"
+                                       value="2.00" min="0.01" step="any"
                                        class="small-text" required>
                                 <p class="description">How much readers pay to unlock a single article.</p>
                             </td>
