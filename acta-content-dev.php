@@ -15,18 +15,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ─── Auto-updates ─────────────────────────────────────────────────────────────
-// Same workflow as production — checks GitHub Releases for acta-content-dev.zip.
+// Checks Acta's own update server for new versions and silently installs them.
 
 require_once plugin_dir_path( __FILE__ ) . 'lib/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $acta_dev_update_checker = PucFactory::buildUpdateChecker(
-    'https://github.com/Readwithacta/acta-wordpress-plugin/',
+    'https://api.readwithacta.com/api/v1/public/plugin/acta-content-dev/update-info.json',
     __FILE__,
     'acta-content-dev'
 );
-$acta_dev_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content-dev\.zip/' );
-$acta_dev_update_checker->setCheckPeriod( 6 ); // Check for updates every 6 hours
+$acta_dev_update_checker->setCheckPeriod( 6 ); // Check every 6 hours
 
 // Force silent background auto-updates.
 add_filter( 'auto_update_plugin', function( $update, $item ) {
