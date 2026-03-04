@@ -26,7 +26,7 @@ $acta_update_checker = PucFactory::buildUpdateChecker(
     __FILE__,
     'acta-content'
 );
-$acta_update_checker->getVcsApi()->enableReleaseAssets();
+$acta_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content\.zip/' );
 
 // Force silent background auto-updates — no publisher action needed.
 // This filter stays even after moving to WordPress.org.
