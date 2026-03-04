@@ -3,7 +3,7 @@
  * Plugin Name: Acta
  * Plugin URI:  https://readwithacta.com
  * Description: Acta embeds a seamless checkout directly inside your content. Readers can unlock premium articles, lessons, files, and more using credit/debit cards, Apple Pay, or Google Pay — in seconds.
- * Version:     3.0.0
+ * Version:     3.0.1
  * Author:      Acta
  * Author URI:  https://readwithacta.com
  * License:     GPL-2.0+
@@ -39,7 +39,7 @@ add_filter( 'auto_update_plugin', function( $update, $item ) {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-define( 'ACTA_PLUGIN_VERSION', '3.0.0' );
+define( 'ACTA_PLUGIN_VERSION', '3.0.1' );
 define( 'ACTA_OPTION_KEY', 'acta_secret_key' );
 define( 'ACTA_PUBLISHER_ID_KEY', 'acta_publisher_id' );
 define( 'ACTA_STRIPE_URL_KEY', 'acta_stripe_url' );

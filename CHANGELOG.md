@@ -1,3 +1,8 @@
+## v3.0.1 -- 2026-03-04
+
+### Changes
+- Refactor custom price snippet display in acta-content and acta-content-dev files for improved layout and styling consistency
+
 ## v3.0.0 -- 2026-03-04
 
 ### Changes
