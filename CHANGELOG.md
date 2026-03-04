@@ -1,3 +1,10 @@
+## v4.0.0 -- 2026-03-04
+
+### Changes
+- Enhance acta-content.php with Base64 SVG menu icon definition, update sanitization to use wp_unslash() for POST data, and improve admin notice strings with i18n wrappers. Add agent guidelines in AGENTS.md and update readme.txt for external services disclosure and versioning.
+- Update release assets configuration in acta-content.php to specify ZIP file pattern for auto-updates
+- Delete acta-content.v1.1.0-checkpoint.php
+
 ## v3.0.1 -- 2026-03-04
 
 ### Changes

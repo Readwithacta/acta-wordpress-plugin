@@ -3,7 +3,7 @@
  * Plugin Name: Acta (Dev)
  * Plugin URI:  https://readwithacta.com
  * Description: DEV/STAGING version of Acta — points to the development backend with Stripe test keys. Do NOT use in production.
- * Version:     3.0.1-dev
+ * Version:     4.0.0-dev
  * Author:      Acta
  * Author URI:  https://readwithacta.com
  * License:     GPL-2.0+
@@ -37,7 +37,7 @@ add_filter( 'auto_update_plugin', function( $update, $item ) {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-define( 'ACTA_DEV_PLUGIN_VERSION', '3.0.1-dev' );
+define( 'ACTA_DEV_PLUGIN_VERSION', '4.0.0-dev' );
 define( 'ACTA_DEV_OPTION_KEY', 'acta_dev_secret_key' );
 define( 'ACTA_DEV_PUBLISHER_ID_KEY', 'acta_dev_publisher_id' );
 define( 'ACTA_DEV_STRIPE_URL_KEY', 'acta_dev_stripe_url' );
