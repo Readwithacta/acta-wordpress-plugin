@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write  # Required to create GitHub Releases
+
 jobs:
   release:
     name: Build & publish GitHub Release
