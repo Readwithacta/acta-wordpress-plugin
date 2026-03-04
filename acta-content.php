@@ -511,7 +511,13 @@ function acta_settings_page() {
             <!-- ═══ STATE: NOT REGISTERED — Show onboarding form ═══ -->
             <div style="max-width: 600px; margin-top: 20px;">
                 <h2>Get started accepting payments on your content</h2>
-                <p>Fill in the details below and we'll set everything up for you. You'll be redirected to Stripe to complete your payment setup.</p>
+                <ul style="margin-bottom: 24px; padding-left: 20px; line-height: 1.6; color: #1d2327;">
+                    <li><strong>Product:</strong> Enables a seamless payment experience, completely embedded within your paywall.</li>
+                    <li><strong>Content pricing:</strong> You are in control of article pricing and can set it directly within the Post. Please note that there are pricing minimums set by currency (<a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a>).</li>
+                    <li><strong>Pricing:</strong> Our philosophy is win-win, so there's no setup or monthly recurring fee. We do a 15% rev share on the transactions powered by Acta. This includes processor payment fees — you don't have to worry about those.</li>
+                    <li><strong>Setup:</strong> Fill out the form below, set up Stripe Connect with Acta to receive the batched payouts through Stripe.</li>
+                    <li><strong>Questions:</strong> Reach out to <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a></li>
+                </ul>
 
                 <form method="post" action="">
                     <?php wp_nonce_field( 'acta_onboard' ); ?>
@@ -620,6 +626,12 @@ function acta_settings_page() {
                     <p style="margin-bottom: 4px; color: #0a6f0a;">&#10003; Stripe setup complete &mdash; readers can now purchase your articles.</p>
                     <p style="margin-bottom: 0;"><strong>Publisher ID:</strong> <code style="font-size: 14px;"><?php echo esc_html( $publisher_id ); ?></code></p>
                 </div>
+
+                <ul style="margin-bottom: 24px; padding-left: 20px; line-height: 1.6; color: #1d2327;">
+                    <li><strong>Product:</strong> Enables a seamless payment experience, completely embedded within your paywall.</li>
+                    <li><strong>Content pricing:</strong> You are in control of article pricing and can set it directly within the Post. Please note that there are pricing minimums set by currency (<a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a>).</li>
+                    <li><strong>Pricing:</strong> Our philosophy is win-win, so there's no setup or monthly recurring fee. We do a 15% rev share on the transactions powered by Acta. This includes processor payment fees — you don't have to worry about those.</li>
+                </ul>
 
                 <?php
                 $publisher_info = ( $conn_status === 'live' && ! empty( $publisher_id ) && ! empty( $secret ) )
