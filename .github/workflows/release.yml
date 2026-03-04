@@ -1,32 +1,131 @@
 name: Release Plugin
 
-# Triggers on version tags: v2.0.1, v2.1.0, etc.
+# Triggers automatically when a commit to main contains [patch], [minor], or [major].
+# Also supports manual trigger from the GitHub Actions UI (Actions tab -> Run workflow).
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
-  contents: write  # Required to create GitHub Releases
+  contents: write
 
 jobs:
   release:
-    name: Build & publish GitHub Release
+    name: Auto-release
     runs-on: ubuntu-latest
 
     steps:
+      # ── Detect whether this push should trigger a release ──────────────────
+      - name: Detect bump type
+        id: bump
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TYPE=${{ github.event.inputs.bump }}" >> $GITHUB_OUTPUT
+          else
+            MSG="${{ github.event.head_commit.message }}"
+            if echo "$MSG" | grep -qF '[major]'; then
+              echo "TYPE=major" >> $GITHUB_OUTPUT
+            elif echo "$MSG" | grep -qF '[minor]'; then
+              echo "TYPE=minor" >> $GITHUB_OUTPUT
+            elif echo "$MSG" | grep -qF '[patch]'; then
+              echo "TYPE=patch" >> $GITHUB_OUTPUT
+            else
+              echo "TYPE=none" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Skip if no release trigger
+        if: steps.bump.outputs.TYPE == 'none'
+        run: echo "No [patch]/[minor]/[major] in commit message. Skipping release."
+
+      # ── Checkout with full history so we can read tags and git log ─────────
       - name: Checkout code
+        if: steps.bump.outputs.TYPE != 'none'
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get version from tag
+      # ── Read current version and calculate the next one ────────────────────
+      - name: Calculate new version
+        if: steps.bump.outputs.TYPE != 'none'
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        run: |
+          CURRENT=$(grep '^ \* Version:' acta-content.php | sed 's/ \* Version: *//')
+          echo "Current: $CURRENT"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "${{ steps.bump.outputs.TYPE }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+          NEW="$MAJOR.$MINOR.$PATCH"
+          echo "VERSION=$NEW" >> $GITHUB_OUTPUT
+          echo "New: $NEW"
 
+      # ── Update version strings in both plugin files ────────────────────────
+      - name: Bump version in plugin files
+        if: steps.bump.outputs.TYPE != 'none'
+        run: |
+          NEW="${{ steps.version.outputs.VERSION }}"
+          # Production plugin
+          sed -i "s/ \* Version:.*/ * Version:     $NEW/" acta-content.php
+          sed -i "s/define( 'ACTA_PLUGIN_VERSION', '.*' );/define( 'ACTA_PLUGIN_VERSION', '$NEW' );/" acta-content.php
+          # Dev plugin
+          sed -i "s/ \* Version:.*/ * Version:     $NEW-dev/" acta-content-dev.php
+          sed -i "s/define( 'ACTA_DEV_PLUGIN_VERSION', '.*' );/define( 'ACTA_DEV_PLUGIN_VERSION', '$NEW-dev' );/" acta-content-dev.php
+
+      # ── Auto-generate CHANGELOG from commit messages since last tag ─────────
+      - name: Update CHANGELOG.md
+        if: steps.bump.outputs.TYPE != 'none'
+        run: |
+          NEW="${{ steps.version.outputs.VERSION }}"
+          DATE=$(date +%Y-%m-%d)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGES=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s" --no-merges \
+              | sed 's/ \[patch\]//g; s/ \[minor\]//g; s/ \[major\]//g' \
+              | grep -v '^\- $' || echo "- Internal updates")
+          else
+            CHANGES=$(git log --pretty=format:"- %s" --no-merges \
+              | sed 's/ \[patch\]//g; s/ \[minor\]//g; s/ \[major\]//g' || echo "- Initial release")
+          fi
+          TEMP=$(mktemp)
+          printf "## v%s -- %s\n\n### Changes\n%s\n\n" "$NEW" "$DATE" "$CHANGES" > "$TEMP"
+          cat CHANGELOG.md >> "$TEMP"
+          mv "$TEMP" CHANGELOG.md
+
+      # ── Commit version bump back to main, then tag ─────────────────────────
+      - name: Commit, tag, and push
+        if: steps.bump.outputs.TYPE != 'none'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add acta-content.php acta-content-dev.php CHANGELOG.md
+          git commit -m "Release v${{ steps.version.outputs.VERSION }} [skip ci]"
+          git tag "v${{ steps.version.outputs.VERSION }}"
+          git push origin main
+          git push origin "v${{ steps.version.outputs.VERSION }}"
+
+      # ── Build production and dev ZIPs ──────────────────────────────────────
       - name: Build plugin ZIPs
+        if: steps.bump.outputs.TYPE != 'none'
         run: |
           mkdir -p build
 
-          # ── Production ZIP (acta-content.zip) ──────────────────────────────
+          # Production ZIP (acta-content.zip)
           rsync -r \
             --exclude='.git' \
             --exclude='.github' \
@@ -42,7 +141,7 @@ jobs:
           cd build && zip -r acta-content.zip acta-content/ && cd ..
           echo "Prod ZIP: $(du -sh build/acta-content.zip | cut -f1)"
 
-          # ── Dev ZIP (acta-content-dev.zip) ─────────────────────────────────
+          # Dev ZIP (acta-content-dev.zip)
           rsync -r \
             --exclude='.git' \
             --exclude='.github' \
@@ -58,9 +157,12 @@ jobs:
           cd build && zip -r acta-content-dev.zip acta-content-dev/ && cd ..
           echo "Dev ZIP:  $(du -sh build/acta-content-dev.zip | cut -f1)"
 
+      # ── Publish GitHub Release with both ZIPs ──────────────────────────────
       - name: Create GitHub Release
+        if: steps.bump.outputs.TYPE != 'none'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: "v${{ steps.version.outputs.VERSION }}"
           name: "Acta WordPress Plugin v${{ steps.version.outputs.VERSION }}"
           body_path: CHANGELOG.md
           files: |
