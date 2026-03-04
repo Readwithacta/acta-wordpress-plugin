@@ -517,13 +517,11 @@ function acta_dev_settings_page() {
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Set a custom price on an article</h3>
                     <p>By default, all articles use your default price. To set a different price on a specific article, add a <strong>Custom HTML</strong> block in the post editor (before the paywall break) with this snippet:</p>
-                    <div style="position: relative;">
-                        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-                            <button type="button" class="button button-secondary acta-copy-price-btn" title="Copy" style="padding: 4px 8px; min-height: 28px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <pre style="background: #1d2327; color: #f0f0f1; padding: 12px 16px; border-radius: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6;">&lt;div id="acta-price" data-price="<strong style="color: #f0c674;">ENTER_PRICE_HERE</strong>"&gt;&lt;/div&gt;</pre>
+                    <div style="display: flex; align-items: flex-start; gap: 12px; background: #1d2327; border-radius: 4px; padding: 12px 16px;">
+                        <pre style="flex: 1; margin: 0; background: transparent; color: #f0f0f1; padding: 0; overflow-x: auto; font-size: 13px; line-height: 1.6;">&lt;div id="acta-price" data-price="<strong style="color: #f0c674;">ENTER_PRICE_HERE</strong>"&gt;&lt;/div&gt;</pre>
+                        <button type="button" class="button button-secondary acta-copy-price-btn" title="Copy" style="padding: 4px 8px; min-height: 28px; flex-shrink: 0; background: #1d2327; border-color: #3c434a; color: #f0f0f1;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
                     </div>
                     <p class="description">Replace <code>ENTER_PRICE_HERE</code> with the price (e.g. <code>2.99</code>). This overrides the default price for that article only.</p>
                     <script>
