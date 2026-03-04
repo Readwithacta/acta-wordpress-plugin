@@ -493,8 +493,40 @@ function acta_settings_page() {
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Set a custom price on an article</h3>
                     <p>By default, all articles use your default price. To set a different price on a specific article, add a <strong>Custom HTML</strong> block in the post editor (before the paywall break) with this snippet:</p>
-                    <pre style="background: #1d2327; color: #f0f0f1; padding: 12px 16px; border-radius: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6;">&lt;div id="acta-price" data-price="<strong style="color: #f0c674;">ENTER_PRICE_HERE</strong>"&gt;&lt;/div&gt;</pre>
+                    <div style="position: relative;">
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                            <button type="button" class="button button-secondary acta-copy-price-btn">Copy</button>
+                        </div>
+                        <pre style="background: #1d2327; color: #f0f0f1; padding: 12px 16px; border-radius: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6;">&lt;div id="acta-price" data-price="<strong style="color: #f0c674;">ENTER_PRICE_HERE</strong>"&gt;&lt;/div&gt;</pre>
+                    </div>
                     <p class="description">Replace <code>ENTER_PRICE_HERE</code> with the price (e.g. <code>2.99</code>). This overrides the default price for that article only.</p>
+                    <script>
+                    (function() {
+                        var btn = document.querySelector('.acta-copy-price-btn');
+                        if (btn) {
+                            btn.addEventListener('click', function() {
+                                var text = '<div id="acta-price" data-price="ENTER_PRICE_HERE"></div>';
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                    navigator.clipboard.writeText(text).then(function() {
+                                        btn.textContent = 'Copied!';
+                                        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                                    });
+                                } else {
+                                    var ta = document.createElement('textarea');
+                                    ta.value = text;
+                                    ta.style.position = 'fixed';
+                                    ta.style.left = '-9999px';
+                                    document.body.appendChild(ta);
+                                    ta.select();
+                                    document.execCommand('copy');
+                                    document.body.removeChild(ta);
+                                    btn.textContent = 'Copied!';
+                                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                                }
+                            });
+                        }
+                    })();
+                    </script>
                 </div>
             </div>
         <?php endif; ?>
