@@ -21,15 +21,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 // TODO: Remove this entire block when the plugin is published on WordPress.org.
 //       WP.org handles updates natively; this block is only for direct distribution.
 
-require_once plugin_dir_path( __FILE__ ) . 'lib/plugin-update-checker/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-$acta_update_checker = PucFactory::buildUpdateChecker(
-    'https://api.readwithacta.com/api/v1/public/plugin/acta-content/update-info.json',
-    __FILE__,
-    'acta-content'
-);
-$acta_update_checker->setCheckPeriod( 6 ); // Check every 6 hours
+add_filter( 'pre_set_site_transient_update_plugins', 'acta_check_for_updates' );
+function acta_check_for_updates( $transient ) {
+    if ( empty( $transient->checked ) ) {
+        return $transient;
+    }
+    $response = wp_remote_get(
+        'https://api.readwithacta.com/api/v1/public/plugin/acta-content/update-info.json',
+        array( 'timeout' => 10, 'headers' => array( 'Accept' => 'application/json' ) )
+    );
+    if ( is_wp_error( $response ) ) {
+        return $transient;
+    }
+    $data = json_decode( wp_remote_retrieve_body( $response ) );
+    if ( empty( $data->version ) || empty( $data->download_url ) ) {
+        return $transient;
+    }
+    if ( version_compare( $data->version, ACTA_PLUGIN_VERSION, '>' ) ) {
+        $transient->response[ plugin_basename( __FILE__ ) ] = (object) array(
+            'slug'        => 'acta-content',
+            'plugin'      => plugin_basename( __FILE__ ),
+            'new_version' => $data->version,
+            'url'         => 'https://readwithacta.com',
+            'package'     => $data->download_url,
+        );
+    }
+    return $transient;
+}
 
 // Force silent background auto-updates — no publisher action needed.
 // This filter stays even after moving to WordPress.org.
