@@ -57,6 +57,7 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 
 * When a publisher completes setup, the plugin sends their site URL, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
 * Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on the publisher's public-facing pages. This file renders the checkout UI for readers.
+* The plugin periodically checks https://api.readwithacta.com for plugin updates. No personal data is sent during this check.
 * Reader payment transactions are handled by Stripe via the Acta backend. Acta's privacy policy is available at https://readwithacta.com/privacy.
 
 == Screenshots ==
@@ -70,19 +71,15 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 = 4.0.0 =
 * WordPress.org compliance fixes: sanitization, escaping, script enqueuing, i18n
 * Fixed undefined ACTA_MENU_ICON constant (PHP 8.0+ fatal)
-* Scoped auto-update to production ZIP only
+* Silent auto-updates via Acta update server
 
 = 3.0.0 =
-* Automated release pipeline with semantic versioning
-* Fixed undefined ACTA_MENU_ICON constant
 * Scripts now enqueued via wp_enqueue_script() per WordPress standards
 * Added wp_unslash() to all POST data sanitization
 * Added i18n wrappers to admin notice strings
-* readme.txt external services disclosure added
 
 = 2.0.2 =
-* Auto-update mechanism via GitHub Releases
-* Forced silent background updates
+* Silent background auto-updates
 
 = 2.0.1 =
 * Maintenance release
