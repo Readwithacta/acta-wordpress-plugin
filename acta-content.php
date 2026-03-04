@@ -495,7 +495,9 @@ function acta_settings_page() {
                     <p>By default, all articles use your default price. To set a different price on a specific article, add a <strong>Custom HTML</strong> block in the post editor (before the paywall break) with this snippet:</p>
                     <div style="position: relative;">
                         <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-                            <button type="button" class="button button-secondary acta-copy-price-btn">Copy</button>
+                            <button type="button" class="button button-secondary acta-copy-price-btn" title="Copy" style="padding: 4px 8px; min-height: 28px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
                         </div>
                         <pre style="background: #1d2327; color: #f0f0f1; padding: 12px 16px; border-radius: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6;">&lt;div id="acta-price" data-price="<strong style="color: #f0c674;">ENTER_PRICE_HERE</strong>"&gt;&lt;/div&gt;</pre>
                     </div>
@@ -508,8 +510,8 @@ function acta_settings_page() {
                                 var text = '<div id="acta-price" data-price="ENTER_PRICE_HERE"></div>';
                                 if (navigator.clipboard && navigator.clipboard.writeText) {
                                     navigator.clipboard.writeText(text).then(function() {
-                                        btn.textContent = 'Copied!';
-                                        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                                        btn.innerHTML = '<span style="font-size:11px;">Copied!</span>';
+                                        setTimeout(function() { btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'; }, 2000);
                                     });
                                 } else {
                                     var ta = document.createElement('textarea');
@@ -520,8 +522,8 @@ function acta_settings_page() {
                                     ta.select();
                                     document.execCommand('copy');
                                     document.body.removeChild(ta);
-                                    btn.textContent = 'Copied!';
-                                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                                    btn.innerHTML = '<span style="font-size:11px;">Copied!</span>';
+                                    setTimeout(function() { btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'; }, 2000);
                                 }
                             });
                         }
