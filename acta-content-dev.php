@@ -26,6 +26,7 @@ $acta_dev_update_checker = PucFactory::buildUpdateChecker(
     'acta-content-dev'
 );
 $acta_dev_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content-dev\.zip/' );
+$acta_dev_update_checker->setCheckPeriod( 1 ); // Check for updates every hour (default: 12)
 
 // Force silent background auto-updates.
 add_filter( 'auto_update_plugin', function( $update, $item ) {

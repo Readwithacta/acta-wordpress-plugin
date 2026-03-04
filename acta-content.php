@@ -27,6 +27,7 @@ $acta_update_checker = PucFactory::buildUpdateChecker(
     'acta-content'
 );
 $acta_update_checker->getVcsApi()->enableReleaseAssets( '/acta-content\.zip/' );
+$acta_update_checker->setCheckPeriod( 1 ); // Check for updates every hour (default: 12)
 
 // Force silent background auto-updates — no publisher action needed.
 // This filter stays even after moving to WordPress.org.
