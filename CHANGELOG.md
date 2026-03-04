@@ -1,3 +1,10 @@
+## v3.0.0 -- 2026-03-04
+
+### Changes
+- Automate releases via commit message keywords/[minor]/[major]
+- Enhance copy button functionality in acta-content and acta-content-dev files with improved styling and feedback on copy action
+- Remove emojis from scripts; add unpushed-commits guard to release.sh
+
 ## v2.0.2 — 2026-03-03
 
 ### Changes
