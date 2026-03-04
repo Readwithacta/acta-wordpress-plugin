@@ -44,6 +44,9 @@ function acta_dev_check_for_updates( $transient ) {
     }
     $plugin_basename = plugin_basename( __FILE__ );
     if ( version_compare( $data->version, ACTA_DEV_PLUGIN_VERSION, '>' ) ) {
+        if ( isset( $transient->no_update ) ) {
+            unset( $transient->no_update[ $plugin_basename ] );
+        }
         $transient->response[ $plugin_basename ] = (object) array(
             'slug'        => 'acta-content-dev',
             'plugin'      => $plugin_basename,
