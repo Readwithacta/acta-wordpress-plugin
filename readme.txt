@@ -62,9 +62,9 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 
 == Screenshots ==
 
-1. The Acta checkout prompt on an article
-2. Plugin settings page in WordPress admin
-3. Stripe Connect onboarding
+1. Acta prompt on an article
+2. Acta payment experience
+3. Acta plugin settings page in WordPress admin
 
 == Changelog ==
 
