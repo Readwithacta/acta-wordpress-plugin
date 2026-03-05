@@ -228,6 +228,22 @@ function acta_maybe_redirect_after_activation() {
 // ─── Admin settings page ─────────────────────────────────────────────────────
 
 add_action( 'admin_menu', 'acta_add_admin_menu' );
+add_action( 'admin_enqueue_scripts', 'acta_enqueue_admin_scripts' );
+
+function acta_enqueue_admin_scripts( $hook ) {
+	if ( 'toplevel_page_' . ACTA_ADMIN_PAGE_SLUG !== $hook ) {
+		return;
+	}
+	$asset_url = plugin_dir_url( __FILE__ ) . 'assets/js/admin-copy-price.js';
+	wp_enqueue_script(
+		'acta-admin-copy-price',
+		$asset_url,
+		array(),
+		ACTA_PLUGIN_VERSION,
+		true
+	);
+}
+
 function acta_add_admin_menu() {
     add_menu_page(
         'Acta Settings',
@@ -690,33 +706,6 @@ function acta_settings_page() {
                         </button>
                     </div>
                     <p class="description">Replace <code>ENTER_PRICE_HERE</code> with the price (e.g. <code>2.99</code>). This overrides the default price for that article only.</p>
-                    <script>
-                    (function() {
-                        var btn = document.querySelector('.acta-copy-price-btn');
-                        if (btn) {
-                            btn.addEventListener('click', function() {
-                                var text = '<div id="acta-price" data-price="ENTER_PRICE_HERE"></div>';
-                                if (navigator.clipboard && navigator.clipboard.writeText) {
-                                    navigator.clipboard.writeText(text).then(function() {
-                                        btn.innerHTML = '<span style="font-size:11px;">Copied!</span>';
-                                        setTimeout(function() { btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'; }, 2000);
-                                    });
-                                } else {
-                                    var ta = document.createElement('textarea');
-                                    ta.value = text;
-                                    ta.style.position = 'fixed';
-                                    ta.style.left = '-9999px';
-                                    document.body.appendChild(ta);
-                                    ta.select();
-                                    document.execCommand('copy');
-                                    document.body.removeChild(ta);
-                                    btn.innerHTML = '<span style="font-size:11px;">Copied!</span>';
-                                    setTimeout(function() { btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'; }, 2000);
-                                }
-                            });
-                        }
-                    })();
-                    </script>
                 </div>
             </div>
         <?php endif; ?>
