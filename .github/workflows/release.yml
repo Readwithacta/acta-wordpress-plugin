@@ -48,46 +48,67 @@ jobs:
           # readme.txt stable tag
           sed -i "s/^Stable tag:.*/Stable tag: $V/" readme.txt
 
+      # ── Build WP.org plugin file (strip direct-distribution-only blocks) ────
+      # Removes everything between // @wporg-strip-start and // @wporg-strip-end
+      # (inclusive). The result is safe for WordPress.org SVN — no custom update
+      # server calls, no forced auto-update filter.
+      - name: Build WP.org plugin file
+        run: |
+          awk '/@wporg-strip-start/{skip=1} !skip{print} /@wporg-strip-end/{skip=0}' \
+            acta-content.php | cat -s > acta-content-wporg.php
+
+      # ── Build WP.org readme (strip direct-distribution-only lines) ─────────
+      # Removes the update-check line — WP.org uses its own update system.
+      - name: Build WP.org readme
+        run: |
+          awk '!/periodically checks.*plugin updates/' readme.txt > readme-wporg.txt
+
       # ── Build ZIPs ──────────────────────────────────────────────────────────
       - name: Build plugin ZIPs
         run: |
           mkdir -p build
 
-          # Production ZIP — acta-content.zip
-          rsync -r \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='build' \
-            --exclude='build-dev.sh' \
-            --exclude='release.sh' \
-            --exclude='AGENTS.md' \
-            --exclude='CHANGELOG.md' \
-            --exclude='*.zip' \
-            --exclude='OLD' \
-            --exclude='*.checkpoint.php' \
-            --exclude='.DS_Store' \
+          COMMON_EXCLUDES=(
+            --exclude='.git'
+            --exclude='.github'
+            --exclude='build'
+            --exclude='build-dev.sh'
+            --exclude='release.sh'
+            --exclude='AGENTS.md'
+            --exclude='CHANGELOG.md'
+            --exclude='*.zip'
+            --exclude='OLD'
+            --exclude='*.checkpoint.php'
+            --exclude='.DS_Store'
+            --exclude='acta-content-wporg.php'
+            --exclude='readme-wporg.txt'
+          )
+
+          # Production ZIP — acta-content.zip (direct distribution, full file)
+          rsync -r "${COMMON_EXCLUDES[@]}" \
             --exclude='acta-content-dev.php' \
             . build/acta-content/
           cd build && zip -r acta-content.zip acta-content/ && cd ..
-          echo "Prod ZIP: $(du -sh build/acta-content.zip | cut -f1)"
+          echo "Prod ZIP:   $(du -sh build/acta-content.zip | cut -f1)"
 
           # Dev ZIP — acta-content-dev.zip
-          rsync -r \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='build' \
-            --exclude='build-dev.sh' \
-            --exclude='release.sh' \
-            --exclude='AGENTS.md' \
-            --exclude='CHANGELOG.md' \
-            --exclude='*.zip' \
-            --exclude='OLD' \
-            --exclude='*.checkpoint.php' \
-            --exclude='.DS_Store' \
+          rsync -r "${COMMON_EXCLUDES[@]}" \
             --exclude='acta-content.php' \
             . build/acta-content-dev/
           cd build && zip -r acta-content-dev.zip acta-content-dev/ && cd ..
-          echo "Dev ZIP:  $(du -sh build/acta-content-dev.zip | cut -f1)"
+          echo "Dev ZIP:    $(du -sh build/acta-content-dev.zip | cut -f1)"
+
+          # WP.org ZIP — acta-content-wporg.zip (stripped, SVN-ready)
+          rsync -r "${COMMON_EXCLUDES[@]}" \
+            --exclude='acta-content-dev.php' \
+            --exclude='acta-content.php' \
+            . build/acta-content-wporg/
+          # Replace the main plugin file with the stripped WP.org version
+          cp acta-content-wporg.php build/acta-content-wporg/acta-content.php
+          # Replace readme with stripped version (no update-check line)
+          cp readme-wporg.txt build/acta-content-wporg/readme.txt
+          cd build && zip -r acta-content-wporg.zip acta-content-wporg/ && cd ..
+          echo "WP.org ZIP: $(du -sh build/acta-content-wporg.zip | cut -f1)"
 
       # ── Create GitHub Release ───────────────────────────────────────────────
       - name: Create GitHub Release
@@ -99,6 +120,7 @@ jobs:
           files: |
             build/acta-content.zip
             build/acta-content-dev.zip
+            build/acta-content-wporg.zip
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,13 +144,39 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"version\":\"${V}-dev\",\"download_url\":\"$BASE/acta-content-dev.zip\"}"
 
-# ─── Future: WordPress.org deployment ────────────────────────────────────────
-# When ready to submit to WP.org, add a second job here:
+# ─── WordPress.org SVN deployment ────────────────────────────────────────────
+# Disabled until WP.org credentials are added as repository secrets.
 #
-#  deploy-to-wporg:
-#    needs: release
-#    uses: 10up/action-wordpress-plugin-deploy@stable
-#    env:
-#      SVN_PASSWORD: ${{ secrets.WP_SVN_PASSWORD }}
-#      SVN_USERNAME: ${{ secrets.WP_SVN_USERNAME }}
-#      SLUG: acta-content
+# To enable:
+#   1. Submit the plugin at https://wordpress.org/plugins/developers/add/
+#   2. Once approved, add these secrets in GitHub → Settings → Secrets:
+#        WP_SVN_USERNAME  — your wordpress.org username
+#        WP_SVN_PASSWORD  — your wordpress.org password (or app password)
+#   3. Uncomment the job below and remove this comment block.
+#
+# deploy-to-wporg:
+#   name: Deploy to WordPress.org SVN
+#   needs: release
+#   runs-on: ubuntu-latest
+#   if: ${{ !failure() }}
+#
+#   steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v4
+#
+#     - name: Download WP.org ZIP from release
+#       run: |
+#         V="${{ needs.release.outputs.version }}"  # expose VERSION as job output first
+#         BASE="https://github.com/Readwithacta/acta-wordpress-plugin/releases/download/$V"
+#         curl -L -o acta-content-wporg.zip "$BASE/acta-content-wporg.zip"
+#         unzip acta-content-wporg.zip -d plugin-dir
+#
+#     - name: Deploy to WordPress.org SVN
+#       uses: 10up/action-wordpress-plugin-deploy@stable
+#       with:
+#         generate-zip: false
+#         plugin-slug: acta-content
+#         build-dir: plugin-dir/acta-content-wporg
+#       env:
+#         SVN_USERNAME: ${{ secrets.WP_SVN_USERNAME }}
+#         SVN_PASSWORD: ${{ secrets.WP_SVN_PASSWORD }}

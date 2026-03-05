@@ -393,33 +393,6 @@ function acta_dev_fetch_publisher_info( $publisher_id, $secret, $site_url ) {
 }
 
 /**
- * Fetch default rev share % from Acta DEV backend (for onboarding display).
- * Cached 24h via transient.
- *
- * @return int
- */
-function acta_dev_fetch_default_rev_share() {
-    $cache_key = 'acta_dev_default_rev_share';
-    $cached    = get_transient( $cache_key );
-    if ( $cached !== false && is_numeric( $cached ) ) {
-        return (int) $cached;
-    }
-    $url      = rtrim( ACTA_DEV_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-config';
-    $response = wp_remote_get( $url, array( 'timeout' => 5 ) );
-    if ( is_wp_error( $response ) ) {
-        return 15;
-    }
-    $code = wp_remote_retrieve_response_code( $response );
-    if ( $code !== 200 ) {
-        return 15;
-    }
-    $body = json_decode( wp_remote_retrieve_body( $response ), true );
-    $rev  = isset( $body['defaultRevShare'] ) ? (int) $body['defaultRevShare'] : 15;
-    set_transient( $cache_key, $rev, DAY_IN_SECONDS );
-    return $rev;
-}
-
-/**
  * Update default article price via Acta DEV backend.
  */
 function acta_dev_update_default_price( $publisher_id, $secret, $site_url, $article_price ) {
@@ -557,16 +530,16 @@ function acta_dev_settings_page() {
         <p style="color: #666;">Version <?php echo esc_html( ACTA_DEV_PLUGIN_VERSION ); ?></p>
 
         <?php if ( $conn_status === 'not_registered' || empty( $conn_status ) ) : ?>
-            <?php $current_user = wp_get_current_user(); $default_rev = acta_dev_fetch_default_rev_share(); ?>
+            <?php $current_user = wp_get_current_user(); ?>
             <!-- ═══ STATE: NOT REGISTERED — Show onboarding form ═══ -->
             <div style="max-width: 600px; margin-top: 20px;">
                 <h2>Get started accepting payments on your content</h2>
                 <ul style="margin-bottom: 24px; padding-left: 20px; line-height: 1.6; color: #1d2327;">
-                    <li><strong>Product:</strong> Enables a seamless payment experience, completely embedded within your paywall.</li>
-                    <li><strong>Content pricing:</strong> You are in control of article pricing and can set it directly within the Post. Please note that there are pricing minimums set by currency (<a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a>).</li>
-                    <li><strong>Pricing:</strong> Our philosophy is win-win, so there's no setup or monthly recurring fee. We do a <?php echo (int) $default_rev; ?>% rev share on the transactions powered by Acta. This includes processor payment fees — you don't have to worry about those.</li>
-                    <li><strong>Setup:</strong> Fill out the form below, set up Stripe Connect with Acta to receive the batched payouts through Stripe.</li>
-                    <li><strong>Questions:</strong> Reach out to <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a></li>
+                    <li><strong>Product:</strong> Seamless payment experience embedded in your paywall</li>
+                    <li><strong>Content pricing:</strong> You control article pricing; pricing minimums by currency — <a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a></li>
+                    <li><strong>Pricing:</strong> No setup or monthly fee; pricing is rev share of Acta-powered transactions</li>
+                    <li><strong>Setup:</strong> Fill out the form and set up Stripe Connect</li>
+                    <li><strong>Questions:</strong> <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a></li>
                 </ul>
 
                 <form method="post" action="">
@@ -698,9 +671,10 @@ function acta_dev_settings_page() {
                 </div>
 
                 <ul style="margin-bottom: 24px; padding-left: 20px; line-height: 1.6; color: #1d2327;">
-                    <li><strong>Product:</strong> Enables a seamless payment experience, completely embedded within your paywall.</li>
-                    <li><strong>Content pricing:</strong> You are in control of article pricing and can set it directly within the Post. Please note that there are pricing minimums set by currency (<a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a>).</li>
-                    <li><strong>Pricing:</strong> Our philosophy is win-win, so there's no setup or monthly recurring fee. We do a <?php echo (int) $rev_share; ?>% rev share on the transactions powered by Acta. This includes processor payment fees — you don't have to worry about those.</li>
+                    <li><strong>Product:</strong> Seamless payment experience embedded in your paywall</li>
+                    <li><strong>Content pricing:</strong> You control article pricing; pricing minimums by currency — <a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a></li>
+                    <li><strong>Pricing:</strong> No setup or monthly fee; <?php echo (int) $rev_share; ?>% rev share including processor fees</li>
+                    <li><strong>Questions:</strong> <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a></li>
                 </ul>
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Change default price</h3>

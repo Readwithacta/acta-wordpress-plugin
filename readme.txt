@@ -2,7 +2,7 @@
 Contributors: readwithacta
 Tags: paywall, monetization, payments, subscriptions, content
 Requires at least: 5.8
-Tested up to: 6.7
+Tested up to: 6.9
 Stable tag: 4.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -57,7 +57,6 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 
 * When a publisher completes setup, the plugin sends their site URL, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
 * Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on the publisher's public-facing pages. This file renders the checkout UI for readers.
-* The plugin periodically checks https://api.readwithacta.com for plugin updates. No personal data is sent during this check.
 * Reader payment transactions are handled by Stripe via the Acta backend. Acta's privacy policy is available at https://readwithacta.com/privacy.
 
 == Screenshots ==
@@ -71,7 +70,6 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 = 4.0.0 =
 * WordPress.org compliance fixes: sanitization, escaping, script enqueuing, i18n
 * Fixed undefined ACTA_MENU_ICON constant (PHP 8.0+ fatal)
-* Silent auto-updates via Acta update server
 
 = 3.0.0 =
 * Scripts now enqueued via wp_enqueue_script() per WordPress standards
@@ -79,7 +77,7 @@ This plugin connects to the Acta service (https://readwithacta.com) to process p
 * Added i18n wrappers to admin notice strings
 
 = 2.0.2 =
-* Silent background auto-updates
+* Maintenance release
 
 = 2.0.1 =
 * Maintenance release
