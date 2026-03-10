@@ -71,11 +71,13 @@ jobs:
           COMMON_EXCLUDES=(
             --exclude='.git'
             --exclude='.github'
+            --exclude='.gitignore'
             --exclude='build'
             --exclude='build-dev.sh'
             --exclude='release.sh'
             --exclude='AGENTS.md'
             --exclude='CHANGELOG.md'
+            --exclude='README.md'
             --exclude='*.zip'
             --exclude='OLD'
             --exclude='*.checkpoint.php'

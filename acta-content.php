@@ -373,15 +373,21 @@ function acta_fetch_publisher_info( $publisher_id, $secret, $site_url ) {
     if ( empty( $publisher_id ) || empty( $secret ) ) {
         return null;
     }
-    $url = add_query_arg(
+    $url = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-publisher-info';
+    $response = wp_remote_post(
+        $url,
         array(
-            'publisherId' => $publisher_id,
-            'key'         => $secret,
-            'siteUrl'     => $site_url,
-        ),
-        rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-publisher-info'
+            'timeout' => 10,
+            'headers' => array( 'Content-Type' => 'application/json' ),
+            'body'    => wp_json_encode(
+                array(
+                    'publisherId' => $publisher_id,
+                    'key'         => $secret,
+                    'siteUrl'     => $site_url,
+                )
+            ),
+        )
     );
-    $response = wp_remote_get( $url, array( 'timeout' => 10 ) );
     if ( is_wp_error( $response ) ) {
         return null;
     }
@@ -735,8 +741,9 @@ function acta_register_routes() {
                 'sanitize_callback' => 'sanitize_text_field',
             ),
             'key' => array(
-                'required' => true,
-                'type'     => 'string',
+                'required'          => true,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
             ),
         ),
     ) );
@@ -767,7 +774,6 @@ function acta_verify_secret( WP_REST_Request $request ) {
  */
 function acta_get_content( WP_REST_Request $request ) {
     $slug = $request->get_param( 'slug' );
-    $debug = $request->get_param( 'debug' ) === '1';
 
     // Try post types in order: post, page, then any custom post type
     $post = acta_get_post_by_slug( $slug, array( 'post', 'page' ) );
@@ -782,9 +788,11 @@ function acta_get_content( WP_REST_Request $request ) {
     // Strip all known paywall markers from raw content
     $clean_content = acta_strip_paywall_markers( $raw_content );
 
-    // In debug mode, return raw content at each stage to help diagnose issues
+    // @wporg-strip-start
+    // Debug mode: return raw content at each stage to help diagnose issues.
+    // Stripped from WordPress.org build — only available in direct-distribution builds.
+    $debug = $request->get_param( 'debug' ) === '1';
     if ( $debug ) {
-        // Collect all the_content filter hooks BEFORE removal
         global $wp_filter;
         $content_hooks_before = array();
         if ( isset( $wp_filter['the_content'] ) ) {
@@ -802,10 +810,7 @@ function acta_get_content( WP_REST_Request $request ) {
                 }
             }
         }
-
-        // Run the full filtering pipeline (same as non-debug mode)
         $final_content = acta_apply_content_filters( $clean_content, $post->ID );
-
         return new WP_REST_Response( array(
             'version'           => ACTA_PLUGIN_VERSION,
             'slug'              => $slug,
@@ -821,6 +826,7 @@ function acta_get_content( WP_REST_Request $request ) {
             'content_hooks'     => $content_hooks_before,
         ), 200 );
     }
+    // @wporg-strip-end
 
     // Apply the_content filters (image sizing, shortcodes, embeds, etc.)
     // but NOT the paywall filters (they've been stripped above)
@@ -842,7 +848,7 @@ function acta_get_post_by_slug( $slug, $post_types = array( 'post', 'page' ) ) {
     $args = array(
         'name'           => $slug,
         'post_type'      => $post_types,
-        'post_status'    => array( 'publish', 'private' ),
+        'post_status'    => 'publish',
         'posts_per_page' => 1,
     );
 
