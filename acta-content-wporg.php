@@ -13,65 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-// @wporg-strip-start
-// ─── Auto-updates (direct distribution only) ──────────────────────────────────
-// This entire block is stripped from the WordPress.org build automatically by
-// release.yml. WP.org handles updates natively via its own API.
-// For direct-distribution ZIPs, this checks Acta's own update server and forces
-// silent background updates so all publishers stay current.
-// The update server is notified by GitHub Actions after each release — no GitHub
-// API calls from publishers, no rate limits.
-
-add_filter( 'pre_set_site_transient_update_plugins', 'acta_check_for_updates' );
-add_filter( 'site_transient_update_plugins', 'acta_check_for_updates' );
-function acta_check_for_updates( $transient ) {
-    if ( ! is_object( $transient ) || empty( $transient->checked ) ) {
-        return $transient;
-    }
-    $data = get_site_transient( 'acta_update_data' );
-    if ( false === $data ) {
-        $response = wp_remote_get(
-            'https://api.readwithacta.com/api/v1/public/plugin/acta-content/update-info.json',
-            array( 'timeout' => 10, 'headers' => array( 'Accept' => 'application/json' ) )
-        );
-        if ( is_wp_error( $response ) ) {
-            return $transient;
-        }
-        $data = json_decode( wp_remote_retrieve_body( $response ) );
-        if ( ! empty( $data->version ) ) {
-            set_site_transient( 'acta_update_data', $data, 6 * HOUR_IN_SECONDS );
-        }
-    }
-    if ( empty( $data->version ) || empty( $data->download_url ) ) {
-        return $transient;
-    }
-    $plugin_basename = plugin_basename( __FILE__ );
-    if ( version_compare( $data->version, ACTA_PLUGIN_VERSION, '>' ) ) {
-        if ( isset( $transient->no_update ) ) {
-            unset( $transient->no_update[ $plugin_basename ] );
-        }
-        $transient->response[ $plugin_basename ] = (object) array(
-            'slug'        => 'acta-content',
-            'plugin'      => $plugin_basename,
-            'new_version' => $data->version,
-            'url'         => 'https://readwithacta.com',
-            'package'     => $data->download_url,
-        );
-    }
-    return $transient;
-}
-
-// Force silent background auto-updates — no publisher action needed.
-add_filter( 'auto_update_plugin', function( $update, $item ) {
-    if ( isset( $item->plugin ) && $item->plugin === plugin_basename( __FILE__ ) ) {
-        return true;
-    }
-    if ( isset( $item->slug ) && $item->slug === 'acta-content' ) {
-        return true;
-    }
-    return $update;
-}, 10, 2 );
-// @wporg-strip-end
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -789,45 +730,6 @@ function acta_get_content( WP_REST_Request $request ) {
     // Strip all known paywall markers from raw content
     $clean_content = acta_strip_paywall_markers( $raw_content );
 
-    // @wporg-strip-start
-    // Debug mode: return raw content at each stage to help diagnose issues.
-    // Stripped from WordPress.org build — only available in direct-distribution builds.
-    $debug = $request->get_param( 'debug' ) === '1';
-    if ( $debug ) {
-        global $wp_filter;
-        $content_hooks_before = array();
-        if ( isset( $wp_filter['the_content'] ) ) {
-            foreach ( $wp_filter['the_content']->callbacks as $priority => $callbacks ) {
-                foreach ( $callbacks as $key => $callback ) {
-                    $func = $callback['function'];
-                    if ( is_string( $func ) ) {
-                        $content_hooks_before[] = $priority . ': ' . $func;
-                    } elseif ( is_array( $func ) && isset( $func[1] ) ) {
-                        $class = is_object( $func[0] ) ? get_class( $func[0] ) : (string) $func[0];
-                        $content_hooks_before[] = $priority . ': ' . $class . '::' . $func[1];
-                    } elseif ( $func instanceof Closure ) {
-                        $content_hooks_before[] = $priority . ': {closure}';
-                    }
-                }
-            }
-        }
-        $final_content = acta_apply_content_filters( $clean_content, $post->ID );
-        return new WP_REST_Response( array(
-            'version'           => ACTA_PLUGIN_VERSION,
-            'slug'              => $slug,
-            'id'                => $post->ID,
-            'status'            => $post->post_status,
-            'raw_content'       => $raw_content,
-            'raw_length'        => strlen( $raw_content ),
-            'stripped_content'  => $clean_content,
-            'stripped_length'   => strlen( $clean_content ),
-            'final_content'     => $final_content,
-            'final_length'      => strlen( $final_content ),
-            'has_paywall_marker'=> (bool) preg_match( '/wp:jetpack\/paywall/', $raw_content ),
-            'content_hooks'     => $content_hooks_before,
-        ), 200 );
-    }
-    // @wporg-strip-end
 
     // Apply the_content filters (image sizing, shortcodes, embeds, etc.)
     // but NOT the paywall filters (they've been stripped above)
