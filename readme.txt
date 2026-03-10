@@ -27,12 +27,11 @@ Acta embeds a seamless checkout directly inside your content. Readers can unlock
 * No subscription required for readers — pay once, read once
 * Apple Pay and Google Pay supported out of the box
 * Automatic Stripe Connect integration — revenue paid directly to you
-* Works with Jetpack, Simple Membership, MemberPress, and more
 * Lightweight — single JS snippet, no page speed impact
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/acta-content/` or install via WordPress admin
+1. Search for "Acta" in WordPress Admin → Plugins → Add New, or upload the ZIP via Upload Plugin
 2. Activate the plugin
 3. Follow the on-screen setup to connect your Acta account
 4. Complete Stripe onboarding to receive payments
@@ -43,7 +42,7 @@ Acta embeds a seamless checkout directly inside your content. Readers can unlock
 No. Readers pay with their card, Apple Pay, or Google Pay without creating an account.
 
 = What is Acta's pricing model? =
-Acta uses a revenue-share model: we make money only when publishers do. Stripe's standard processing fee also applies.
+Acta uses a revenue-share model: we make money only when publishers do. Stripe's processing fee included.
 
 = Which currencies are supported? =
 All major currencies supported by Stripe, including USD, GBP, EUR, CAD, AUD, and more.
@@ -53,11 +52,21 @@ Yes. Acta auto-detects your existing paywall styling and matches it.
 
 == External Services ==
 
-This plugin connects to the Acta service (https://readwithacta.com) to process payments and deliver content to readers.
+This plugin connects to the following third-party services:
 
-* When a publisher completes setup, the plugin sends their site URL, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
-* Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on the publisher's public-facing pages. This file renders the checkout UI for readers.
-* Reader payment transactions are handled by Stripe via the Acta backend. Acta's privacy policy is available at https://readwithacta.com/privacy.
+**Acta (https://readwithacta.com)**
+
+* When a publisher completes setup, the plugin sends their site URL, email, name, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
+* Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on all public-facing pages. This file renders the checkout UI for readers.
+* Reader payment transactions are processed by Acta via Stripe.
+* [Acta Terms of Service](https://readwithacta.com/terms)
+* [Acta Privacy Policy](https://readwithacta.com/privacy)
+
+**Stripe (https://stripe.com)**
+
+* The plugin loads Stripe.js (https://js.stripe.com/v3/) on public-facing pages to handle secure payment processing.
+* [Stripe Terms of Service](https://stripe.com/legal)
+* [Stripe Privacy Policy](https://stripe.com/privacy)
 
 == Screenshots ==
 
