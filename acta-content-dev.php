@@ -252,7 +252,9 @@ function acta_dev_add_admin_menu() {
 
 add_action( 'admin_init', 'acta_dev_settings_init' );
 function acta_dev_settings_init() {
-    register_setting( 'acta_dev_settings', ACTA_DEV_OPTION_KEY );
+    register_setting( 'acta_dev_settings', ACTA_DEV_OPTION_KEY, array(
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
     register_setting( 'acta_dev_settings', ACTA_DEV_PUBLISHER_ID_KEY, array(
         'sanitize_callback' => 'sanitize_text_field',
     ) );
