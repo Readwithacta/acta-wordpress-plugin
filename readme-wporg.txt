@@ -1,33 +1,43 @@
 === Acta — Pay Per Article ===
 Contributors: readwithacta
-Tags: paywall, monetization, payments, subscriptions, content
+Tags: paywall, pay per article, monetization, micropayments, paid content
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 6.9.4
 Stable tag: 4.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Monetize your content with a seamless paywall. Readers pay per article using cards, Apple Pay, or Google Pay — in seconds.
+A pay-per-post solution for WordPress publishers. Give casual visitors a simple way to pay for content, no subscription required.
 
 == Description ==
 
-Acta embeds a seamless checkout directly inside your content. Readers can unlock premium articles, lessons, files, and more using credit/debit cards, Apple Pay, or Google Pay — without leaving your site.
+Monetize casual traffic without sacrificing subscriptions. Acta unlocks an additional revenue channel by embedding a seamless checkout directly inside your posts. Sell individual articles, or digital products such as playbooks, e-books, PDFs, video, podcasts, and more.
 
-**How it works:**
+Learn more at [readwithacta.com](https://readwithacta.com/).
 
-1. Install the Acta plugin
-2. Connect your site via the Acta setup wizard
-3. Set a price per article using a simple snippet
-4. Readers click to unlock — Acta handles the rest
+**Pay-per-post on your terms**
 
-**Features:**
+* You control the price - charge what each post is worth
+* One-click payments via cards, Apple Pay, and Google Pay - fully embedded and optimized for conversion
+* Revenue goes directly to your Stripe account
 
-* Per-article pricing — charge what each piece of content is worth
-* No subscription required for readers — pay once, read once
-* Apple Pay and Google Pay supported out of the box
-* Automatic Stripe Connect integration — revenue paid directly to you
-* Lightweight — single JS snippet, no page speed impact
+**We win if you win**
+
+* No setup fees or recurring costs - simple revenue-share model
+* Your customer, your data - get what you need to nurture the relationship
+* Localized currencies - sell content the way your audience expects
+
+**Easy setup**
+
+* Install the plugin, set your price, connect your bank - you're live
+* Works with any WordPress theme, including Jetpack-powered paywalls
+
+**What customers are saying**
+
+* "Setting up and using Acta has been so easy, it took my reader's experience to the next level." - Sports Psychology Today
+* "People are purchasing specific topics of interest, which is exactly what we hoped." - Rascal News
+* "Acta's been working flawlessly with us. I can only recommend it." - The G/O
 
 == Installation ==
 
@@ -38,35 +48,37 @@ Acta embeds a seamless checkout directly inside your content. Readers can unlock
 
 == Frequently Asked Questions ==
 
-= Do readers need an account? =
-No. Readers pay with their card, Apple Pay, or Google Pay without creating an account.
+= What is Acta? =
+Acta is a pay-per-content platform that lets publishers sell individual posts with one-click payments.
 
-= What is Acta's pricing model? =
-Acta uses a revenue-share model: we make money only when publishers do. Stripe's processing fee included.
+= How does pay-per-post work? =
+You set a price on any post. When a visitor hits a paywalled post, they can pay instantly with card, Apple Pay, or Google Pay and get immediate access.
 
-= Which currencies are supported? =
-All major currencies supported by Stripe, including USD, GBP, EUR, CAD, AUD, and more.
+= How much does Acta cost? =
+There are no setup fees, monthly fees, or recurring costs. Acta uses a revenue-share model, so you only pay when you earn.
+
+= Does Acta replace subscriptions? =
+No. Acta is designed to complement subscriptions by monetizing casual visitors who would never subscribe.
+
+= Do readers need to create an account? =
+No. Readers pay and get instant access. No account, login, or sign-up required for their first purchase.
+
+= What payment methods are supported? =
+Credit and debit cards, Apple Pay, Google Pay, and localized currencies. All payments are processed securely through Stripe.
 
 = Does this work with my theme? =
 Yes. Acta auto-detects your existing paywall styling and matches it.
 
 == External Services ==
 
-This plugin connects to the following third-party services:
+= Privacy =
 
-**Acta (https://readwithacta.com)**
+This plugin connects to external services to provide its functionality:
 
-* When a publisher completes setup, the plugin sends their site URL, email, name, plugin endpoint, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No personal data beyond what the publisher explicitly enters is transmitted.
-* Once connected, the plugin loads a JavaScript file from https://api.readwithacta.com on all public-facing pages. This file renders the checkout UI for readers.
-* Reader payment transactions are processed by Acta via Stripe.
-* [Acta Terms of Service](https://readwithacta.com/terms)
-* [Acta Privacy Policy](https://readwithacta.com/privacy)
-
-**Stripe (https://stripe.com)**
-
-* The plugin loads Stripe.js (https://js.stripe.com/v3/) on public-facing pages to handle secure payment processing.
-* [Stripe Terms of Service](https://stripe.com/legal)
-* [Stripe Privacy Policy](https://stripe.com/privacy)
+* During setup, the plugin sends your site URL, email, name, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No data beyond what you explicitly enter is transmitted.
+* On public-facing pages, the plugin loads a JavaScript file from https://api.readwithacta.com to render the checkout UI, and Stripe.js (https://js.stripe.com/v3/) for secure payment processing.
+* [Acta Terms of Service](https://readwithacta.com/terms) | [Acta Privacy Policy](https://readwithacta.com/privacy)
+* [Stripe Terms of Service](https://stripe.com/legal) | [Stripe Privacy Policy](https://stripe.com/privacy)
 
 == Screenshots ==
 
@@ -92,7 +104,7 @@ This plugin connects to the following third-party services:
 * Maintenance release
 
 = 2.0.0 =
-* Self-service onboarding — no manual API setup required
+* Self-service onboarding - no manual API setup required
 * Auto-detection of existing paywall styles
 * Custom per-article pricing via data attribute
 * Jetpack paywall support
