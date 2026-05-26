@@ -80,6 +80,7 @@ define( 'ACTA_OPTION_KEY', 'acta_secret_key' );
 define( 'ACTA_PUBLISHER_ID_KEY', 'acta_publisher_id' );
 define( 'ACTA_STRIPE_URL_KEY', 'acta_stripe_url' );
 define( 'ACTA_CONNECTION_STATUS', 'acta_connection_status' ); // not_registered | registered | live
+define( 'ACTA_SUBSCRIBE_OVERRIDE_KEY', 'acta_subscribe_override' ); // '1' = pay-per-article only (replace the subscribe gate)
 define( 'ACTA_ADMIN_PAGE_SLUG', 'acta-pay-per-article' );
 define( 'ACTA_ACTIVATION_REDIRECT_OPTION', 'acta_do_activation_redirect' );
 // Base64 SVG data URI — works without file path; WordPress blocks external SVG in some hosts.
@@ -447,6 +448,42 @@ function acta_update_default_price( $publisher_id, $secret, $site_url, $article_
     );
 }
 
+/**
+ * Push the paywall mode (pay-per-article only vs. alongside subscriptions) to
+ * the Acta backend. Stored on the publisher record and delivered to the embed
+ * script at runtime — so the flag never lives in (cacheable) page HTML and a
+ * toggle takes effect on the next page load without a cache purge.
+ */
+function acta_update_paywall_mode( $publisher_id, $secret, $site_url, $subscribe_override ) {
+    $url  = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/wordpress-update-paywall-mode';
+    $body = array(
+        'publisherId'       => $publisher_id,
+        'key'               => $secret,
+        'siteUrl'           => $site_url,
+        'subscribeOverride' => (bool) $subscribe_override,
+    );
+    $response = wp_remote_post( $url, array(
+        'timeout' => 15,
+        'headers' => array( 'Content-Type' => 'application/json' ),
+        'body'    => wp_json_encode( $body ),
+    ) );
+    if ( is_wp_error( $response ) ) {
+        return array(
+            'success' => false,
+            'message' => $response->get_error_message(),
+        );
+    }
+    $code = wp_remote_retrieve_response_code( $response );
+    $body = json_decode( wp_remote_retrieve_body( $response ), true );
+    if ( $code === 200 && ! empty( $body['success'] ) ) {
+        return array( 'success' => true );
+    }
+    return array(
+        'success' => false,
+        'message' => $body['error'] ?? ( 'HTTP ' . $code ),
+    );
+}
+
 // ─── Settings page renderer ─────────────────────────────────────────────────
 
 function acta_settings_page() {
@@ -523,9 +560,31 @@ function acta_settings_page() {
         }
     }
 
+    // Handle "Save paywall mode" (subscription + pay-per-article vs pay-per-article only)
+    if (
+        $conn_status === 'live' &&
+        isset( $_POST['acta_action'] ) &&
+        $_POST['acta_action'] === 'save_paywall_mode' &&
+        check_admin_referer( 'acta_save_paywall_mode' )
+    ) {
+        $override = ( '1' === sanitize_text_field( wp_unslash( $_POST['acta_subscribe_override'] ?? '0' ) ) ) ? '1' : '0';
+        $result   = acta_update_paywall_mode( $publisher_id, $secret, home_url(), '1' === $override );
+        if ( $result['success'] ) {
+            update_option( ACTA_SUBSCRIBE_OVERRIDE_KEY, $override );
+            echo '<div class="notice notice-success"><p>' . (
+                '1' === $override
+                    ? esc_html__( 'Saved. Acta will now replace your subscribe paywall with a pay-per-article button.', 'acta-pay-per-article' )
+                    : esc_html__( 'Saved. Acta will mount alongside your existing subscription paywall.', 'acta-pay-per-article' )
+            ) . '</p></div>';
+        } else {
+            echo '<div class="notice notice-error"><p>' . esc_html( $result['message'] ) . '</p></div>';
+        }
+    }
+
     // ── Render the settings page ─────────────────────────────────────────────
-    $countries  = acta_get_supported_countries();
-    $currencies = acta_get_supported_currencies();
+    $countries        = acta_get_supported_countries();
+    $currencies       = acta_get_supported_currencies();
+    $subscribe_override = '1' === get_option( ACTA_SUBSCRIBE_OVERRIDE_KEY, '' );
     ?>
     <div class="wrap">
         <h1>Acta Settings</h1>
@@ -651,6 +710,11 @@ function acta_settings_page() {
                 : null;
             $rev_share = $publisher_info['revShare'] ?? 15;
             $current_default = $publisher_info['articlePrice'] ?? 2.00;
+            // Prefer the backend's value (source of truth) for the toggle state.
+            if ( is_array( $publisher_info ) && isset( $publisher_info['subscribeOverride'] ) ) {
+                $subscribe_override = (bool) $publisher_info['subscribeOverride'];
+                update_option( ACTA_SUBSCRIBE_OVERRIDE_KEY, $subscribe_override ? '1' : '0' );
+            }
             ?>
             <!-- ═══ STATE: LIVE — Show success ═══ -->
             <div style="max-width: 600px; margin-top: 20px;">
@@ -660,12 +724,37 @@ function acta_settings_page() {
                     <p style="margin-bottom: 0;"><strong>Publisher ID:</strong> <code style="font-size: 14px;"><?php echo esc_html( $publisher_id ); ?></code></p>
                 </div>
 
-                <ul style="margin-bottom: 24px; padding-left: 20px; line-height: 1.6; color: #1d2327;">
-                    <li><strong>Product:</strong> Seamless payment experience embedded in your paywall</li>
-                    <li><strong>Content pricing:</strong> You control article pricing; pricing minimums by currency — <a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see Stripe reference</a></li>
-                    <li><strong>Pricing:</strong> No setup or monthly fee; <?php echo (int) $rev_share; ?>% rev share including processor fees</li>
-                    <li><strong>Questions:</strong> <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a></li>
-                </ul>
+                <div style="background: #f0f6fc; border: 1px solid #c8d6e5; border-radius: 6px; padding: 20px 24px; margin-bottom: 20px; line-height: 1.55;">
+                    <h3 style="margin-top: 0;">How Acta works</h3>
+                    <p style="margin: 0 0 12px;">Acta adds a <strong>&ldquo;Read instantly&rdquo;</strong> button to the paywall you already use, giving readers the option to buy a single article. Your subscription offer stays exactly as it is &mdash; Acta finds your paywall and adds the button automatically.</p>
+                    <p style="margin: 0 0 12px;"><strong>Works with:</strong> Jetpack, MemberPress, Paid Memberships Pro, Restrict Content Pro, and more. If something looks off, just <a href="mailto:contact@readwithacta.com">contact us</a> and we&rsquo;ll sort it out.</p>
+                    <p style="margin: 0;"><strong>No paywall yet?</strong> Install the free <a href="https://wordpress.org/plugins/jetpack/" target="_blank" rel="noopener">Jetpack</a> plugin and add a <strong>Paywall</strong> block where the article should lock &mdash; Acta integrates right within it.</p>
+                    <div style="margin: 16px 0 0; padding-top: 16px; border-top: 1px solid #dbe5ee;">
+                        <p style="margin: 0 0 8px;"><strong>Your price:</strong> Set any price per article (<a href="https://docs.stripe.com/currencies" target="_blank" rel="noopener">see currency minimums</a>).</p>
+                        <p style="margin: 0 0 8px;"><strong>Our fee:</strong> No setup or monthly fee; <?php echo (int) $rev_share; ?>% rev share including processor fees.</p>
+                        <p style="margin: 0;"><strong>Questions or need setup help?</strong> Reach us at <a href="mailto:contact@readwithacta.com">contact@readwithacta.com</a>.</p>
+                    </div>
+                </div>
+
+                <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">Paywall mode</h3>
+                    <form method="post" action="">
+                        <?php wp_nonce_field( 'acta_save_paywall_mode' ); ?>
+                        <input type="hidden" name="acta_action" value="save_paywall_mode">
+                        <fieldset>
+                            <label style="display: block; margin-bottom: 10px;">
+                                <input type="radio" name="acta_subscribe_override" value="0" <?php checked( false, $subscribe_override ); ?>>
+                                <strong>Subscriptions + single articles</strong> &mdash; show the Acta button next to your Subscribe button.
+                            </label>
+                            <label style="display: block;">
+                                <input type="radio" name="acta_subscribe_override" value="1" <?php checked( true, $subscribe_override ); ?>>
+                                <strong>Single articles only</strong> &mdash; replace the subscribe prompt with just the Acta button.
+                            </label>
+                        </fieldset>
+                        <p style="margin-bottom: 0; margin-top: 16px;"><?php submit_button( 'Save paywall mode', 'primary', 'submit', false ); ?></p>
+                    </form>
+                </div>
+
                 <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Change default price</h3>
                     <p style="margin-bottom: 12px;">Current default price: <strong><?php echo esc_html( number_format( $current_default, 2 ) ); ?></strong></p>
@@ -716,6 +805,10 @@ function acta_enqueue_frontend_script() {
     $script_url = rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/static/' . urlencode( $publisher_id ) . '.js';
     // Version is false so WordPress does not append ?ver= — the external server manages caching.
     wp_enqueue_script( 'acta-frontend', $script_url, array( 'stripe-js' ), false, false );
+    // Note: pay-per-article only mode is NOT injected into the page here. The
+    // Acta bundle fetches it at runtime from /paywall-config (no-store) so the
+    // setting never lives in cacheable page HTML and a toggle takes effect on the
+    // next page load without a cache purge.
 }
 
 // Add crossorigin="anonymous" to the Acta frontend script tag.
