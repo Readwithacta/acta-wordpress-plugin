@@ -3,7 +3,7 @@ Contributors: readwithacta
 Tags: paywall, pay per article, monetization, micropayments, paid content
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 4.0.0
+Stable tag: 4.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -87,6 +87,11 @@ This plugin connects to external services to provide its functionality:
 3. Acta plugin settings page in WordPress admin
 
 == Changelog ==
+
+= 4.1.0 =
+* New "Paywall mode" setting: add pay-per-article alongside your subscription paywall, or choose pay-per-article only — which replaces the subscribe prompt with just the Acta buy button (for publishers without subscriptions)
+* Clearer setup guidance in the plugin settings, including which paywalls Acta works with
+* Tested up to WordPress 7.0
 
 = 4.0.0 =
 * WordPress.org compliance fixes: sanitization, escaping, script enqueuing, i18n
