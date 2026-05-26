@@ -124,11 +124,59 @@ The following rules apply directly to WordPress.org submission compliance.
 
 ## File Conventions
 
-- `acta-content.php` — production plugin entry point.
+- `acta-content.php` — **production plugin entry point** and the single source of truth for plugin behavior. Feeds BOTH the direct-distribution build and the WordPress.org build (see Distribution below). Any feature change must land here.
+- `acta-content-dev.php` — **dev/test plugin** (slug `acta-content-dev`, points at `api.develop.readwithacta.com`, Stripe test keys). Runs side-by-side with production for manual testing via `./build-dev.sh`. Mirror feature changes here so they can be tested, but this file never ships to publishers.
+- `acta-content-wporg.php`, `readme-wporg.txt` — **build artifacts, do not hand-edit.** Regenerated at release time by `release.yml` (the `@wporg-strip` awk pass on `acta-content.php` / the readme). The committed copies are stale and only vestigial.
 - `lib/` — vendored libraries. Do not modify files inside `lib/` directly.
 - `.github/workflows/` — CI release automation. Do not modify without explicit instruction; changes here affect versioning and asset publishing.
 - `CHANGELOG.md` — manually maintained release notes. Update when making notable changes.
 - Release notes on GitHub are auto-generated from commit messages by the CI workflow.
+
+---
+
+## Distribution channels
+
+This plugin ships through three separate channels — a feature is only "everywhere" when `acta-content.php` (and, for testing, `acta-content-dev.php`) is updated:
+
+1. **WordPress.org directory** — slug **`acta-pay-per-article`** (APPROVED; permalink is locked and cannot be changed). This is what most publishers install from their WP admin / WordPress.com. Built from `acta-content.php` via the `@wporg-strip` pass, distributed via **SVN** (a release system — only push ready versions).
+2. **Direct distribution / Acta portal** — `acta-content.zip` from a GitHub release; installed plugins auto-update via the Plugin Update Checker hitting `api.readwithacta.com`. Publishers can also request this zip via the Acta portal.
+3. **Dev/test** — `acta-content-dev.zip`, uploaded manually to a test site.
+
+---
+
+## WordPress.org submission requirements (learned during review)
+
+The directory review enforces these — get them right or the SVN push / resubmission is rejected:
+
+- **Main file name must equal the slug:** `acta-pay-per-article.php` (NOT `acta-content.php`). WP.org flags `nonstandard_main_filename` otherwise. The release build must rename the entry file accordingly.
+- **Zip name must be `acta-pay-per-article.zip`** (NOT `acta-content-wporg.zip`).
+- **Do NOT include directory assets** (banners, icons, `screenshot-*.png`) in the plugin zip — they are uploaded separately to the SVN `/assets/` folder after approval.
+- **`readme.txt` drives the public WP.org page** (Stable tag, Requires at least, Tested up to, Changelog).
+- **Test on a clean WP install with `WP_DEBUG` true** before submitting — no notices/warnings.
+- Updates after approval are pushed via **SVN tags**, not the "Add your plugin" form.
+
+> NOTE: the current `release.yml` still outputs `acta-content`-named artifacts for the WP.org build. Until that's aligned, the WP.org SVN release requires a manual rename to `acta-pay-per-article.php` / `acta-pay-per-article.zip` (as was done for the initial submission).
+
+### How to release an update to WordPress.org (step by step)
+
+The plugin is **approved** (slug `acta-pay-per-article`). Updates go out via **SVN**, not the submission form. To ship a change:
+
+1. Make the change in **`acta-content.php`** (the single source). Mirror it into `acta-content-dev.php` for testing.
+2. Bump the version in `acta-content.php` (the `Version:` header + `ACTA_PLUGIN_VERSION`) and the `Stable tag` in `readme.txt`.
+3. Build the WP.org package = a folder `acta-pay-per-article/` containing:
+   - `acta-pay-per-article.php` — `acta-content.php` with the `@wporg-strip-start … @wporg-strip-end` blocks removed, renamed to match the slug.
+   - `readme.txt` — with the update-check line removed.
+   - `uninstall.php`, and the functional `assets/` (`acta-logo.*`, `js/`).
+   - **Exclude:** `acta-content-dev.php`, build scripts, `AGENTS.md`/`CHANGELOG.md`/`README.md`, and any screenshot/banner/icon images (those live only in the SVN `assets/` dir).
+   Zip it to `acta-pay-per-article.zip`.
+4. Test the zip on a clean WP install with `WP_DEBUG` on — no notices/warnings.
+5. SVN: `cp` the package into `trunk/`, then `cp` `trunk` → `tags/<version>/`, then `svn ci`. Plugin banners/icons/screenshots go in the SVN `assets/` dir, never in `trunk`.
+
+> The backend (`api.readwithacta.com`) must already have the matching API (model fields, endpoints) deployed, or the plugin's runtime calls fail.
+
+### WordPress 7.0 compliance checklist
+- `Requires PHP: 7.4` and `Tested up to: 7.0` in `readme.txt`.
+- `wp_remote_post` / `wp_remote_get` calls work under the updated Requests library — smoke-test on a 7.0 install.
 
 ---
 

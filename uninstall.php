@@ -14,6 +14,7 @@ $options = array(
 	'acta_publisher_id',
 	'acta_stripe_url',
 	'acta_connection_status',
+	'acta_subscribe_override',
 	'acta_do_activation_redirect',
 );
 

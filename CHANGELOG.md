@@ -1,3 +1,10 @@
+## Unreleased
+
+### Changes
+- Add "Paywall mode" setting: choose between adding pay-per-article alongside an existing subscription paywall, or "pay-per-article only" which replaces the subscribe gate with just the Acta buy button (for publishers who don't sell subscriptions). The setting is saved to the Acta backend on the publisher record and fetched by the embed script at runtime from a no-store config endpoint — so it is never stored in cacheable page HTML and a toggle takes effect on the next page load without any page-cache / CDN purge.
+- Add a "How Acta works" explainer to the settings page clarifying that Acta mounts onto an existing paywall (Jetpack recommended) rather than being a paywall itself, with guidance for publishers who don't have one yet (including Elementor).
+- Bump "Tested up to" to WordPress 7.0.
+
 ## v4.0.0 -- 2026-03-04
 
 ### Changes
