@@ -76,6 +76,7 @@ jobs:
             --exclude='build-dev.sh'
             --exclude='release.sh'
             --exclude='AGENTS.md'
+            --exclude='CLAUDE.md'
             --exclude='CHANGELOG.md'
             --exclude='README.md'
             --exclude='*.zip'
