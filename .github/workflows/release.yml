@@ -83,6 +83,12 @@ jobs:
             --exclude='OLD'
             --exclude='*.checkpoint.php'
             --exclude='.DS_Store'
+            # WordPress.org directory assets must never ship inside the plugin
+            # zip — they belong in the SVN /assets/ folder. Including them got
+            # the initial submission rejected (round 1, 20 Mar 2026).
+            --exclude='screenshot-*.png'
+            --exclude='banner-*.png'
+            --exclude='icon-*.png'
             --exclude='acta-content-wporg.php'
             --exclude='readme-wporg.txt'
           )

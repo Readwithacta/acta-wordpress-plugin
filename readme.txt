@@ -3,7 +3,7 @@ Contributors: readwithacta
 Tags: paywall, pay per article, monetization, micropayments, paid content
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 4.1.0
+Stable tag: 4.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -77,6 +77,7 @@ This plugin connects to external services to provide its functionality:
 
 * During setup, the plugin sends your site URL, email, name, and a locally generated secret key to the Acta API at https://api.readwithacta.com. No data beyond what you explicitly enter is transmitted.
 * On public-facing pages, the plugin loads a JavaScript file from https://api.readwithacta.com to render the checkout UI, and Stripe.js (https://js.stripe.com/v3/) for secure payment processing.
+* When you press "Disconnect Acta", or when you delete the plugin, the plugin sends your site URL, publisher ID and secret key to https://api.readwithacta.com so Acta stops serving the paywall on your site and stops taking payments it can no longer fulfil. Your account and any balance owed are retained so you can reconnect.
 * [Acta Terms of Service](https://readwithacta.com/terms) | [Acta Privacy Policy](https://readwithacta.com/privacy)
 * [Stripe Terms of Service](https://stripe.com/legal) | [Stripe Privacy Policy](https://stripe.com/privacy)
 
@@ -87,6 +88,10 @@ This plugin connects to external services to provide its functionality:
 3. Acta plugin settings page in WordPress admin
 
 == Changelog ==
+
+= 4.2.0 =
+* New "Disconnect Acta" button — pause Acta without deleting the plugin. Your account, Stripe details and any balance owed are kept, so you can reconnect in one click
+* Acta is now notified when the plugin is removed, so your paywall stops cleanly instead of being left half-connected
 
 = 4.1.0 =
 * New "Paywall mode" setting: add pay-per-article alongside your subscription paywall, or choose pay-per-article only — which replaces the subscribe prompt with just the Acta buy button (for publishers without subscriptions)
