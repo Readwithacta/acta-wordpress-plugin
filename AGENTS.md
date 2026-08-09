@@ -159,6 +159,10 @@ The directory review enforces these — get them right or the SVN push / resubmi
 
 ### How to release an update to WordPress.org (step by step)
 
+> **See `CLAUDE.md` for the maintained release runbook** — both channels, the
+> current SVN state, and the gotchas. Keep release steps there, not here, so the
+> two files cannot drift.
+
 The plugin is **approved** (slug `acta-pay-per-article`). Updates go out via **SVN**, not the submission form. To ship a change:
 
 1. Make the change in **`acta-content.php`** (the single source). Mirror it into `acta-content-dev.php` for testing.

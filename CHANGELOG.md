@@ -1,4 +1,11 @@
-## Unreleased
+## v4.2.0 -- 2026-08-06
+
+### Changes
+- Add a **Disconnect Acta** button to the settings page. Turns off the Acta button on the site without deleting the plugin, and tells Acta so the paywall stops being served and no further purchases are taken. The publisher account, Stripe details and any balance owed are kept, so reconnecting is a single click.
+- Notify Acta on uninstall. Deleting the plugin now tells the backend before the local settings are removed, so a publisher who leaves is no longer silently treated as active. Best-effort and non-blocking — uninstall is never held up by a network problem.
+- Stop enqueuing the frontend script while disconnected.
+
+## v4.1.0 -- 2026-05-26
 
 ### Changes
 - Add "Paywall mode" setting: choose between adding pay-per-article alongside an existing subscription paywall, or "pay-per-article only" which replaces the subscribe gate with just the Acta buy button (for publishers who don't sell subscriptions). The setting is saved to the Acta backend on the publisher record and fetched by the embed script at runtime from a no-store config endpoint — so it is never stored in cacheable page HTML and a toggle takes effect on the next page load without any page-cache / CDN purge.
