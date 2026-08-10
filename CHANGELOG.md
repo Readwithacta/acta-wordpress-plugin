@@ -1,3 +1,10 @@
+## v4.2.1 -- 2026-08-10
+
+### Changes
+- Remove the **Disconnect Acta** button added in 4.2.0. It paused the integration but could not edit country, currency or price — which is what publishers actually reach for — so it added a confusing option without solving the underlying need. Publishers who want to stop can still delete the plugin, which is now handled cleanly.
+- Sites left in the `disconnected` state by 4.2.0 are reconnected automatically on the next settings-page visit, so nobody is stranded on a screen that no longer exists.
+- Kept the uninstall notification from 4.2.0 — that is the part that protects the business, and it is unaffected.
+
 ## v4.2.0 -- 2026-08-06
 
 ### Changes

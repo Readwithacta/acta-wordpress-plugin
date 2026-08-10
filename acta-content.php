@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Acta — Pay Per Article
  * Description: Acta embeds a seamless checkout directly inside your content. Readers can unlock premium articles, lessons, files, and more using credit/debit cards, Apple Pay, or Google Pay — in seconds.
- * Version:     4.2.0
+ * Version:     4.2.1
  * Author:      Acta
  * Author URI:  https://readwithacta.com
  * License:     GPL-2.0+
@@ -75,7 +75,7 @@ add_filter( 'auto_update_plugin', function( $update, $item ) {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-define( 'ACTA_PLUGIN_VERSION', '4.2.0' );
+define( 'ACTA_PLUGIN_VERSION', '4.2.1' );
 define( 'ACTA_OPTION_KEY', 'acta_secret_key' );
 define( 'ACTA_PUBLISHER_ID_KEY', 'acta_publisher_id' );
 define( 'ACTA_STRIPE_URL_KEY', 'acta_stripe_url' );
@@ -367,57 +367,6 @@ function acta_connect_to_backend( $publisher_id, $plugin_endpoint, $plugin_secre
 }
 
 /**
- * Tell Acta this site is disconnecting — the plugin is being removed, or the
- * publisher pressed Disconnect.
- *
- * Acta marks the publisher inactive, which stops the paywall being served and
- * stops new purchases. Nothing is deleted: the account, Stripe details and any
- * balance owed are kept, so reinstalling picks up where this left off.
- *
- * @return array{ success: bool, message: string }
- */
-function acta_disconnect_from_backend( $publisher_id, $secret, $site_url ) {
-    if ( empty( $publisher_id ) || empty( $secret ) ) {
-        return array(
-            'success' => false,
-            'message' => 'Not connected to Acta.',
-        );
-    }
-
-    $response = wp_remote_post( rtrim( ACTA_BACKEND_URL, '/' ) . '/api/v1/public/disconnect-wordpress', array(
-        'timeout' => 15,
-        'headers' => array( 'Content-Type' => 'application/json' ),
-        'body'    => wp_json_encode( array(
-            'publisherId'     => $publisher_id,
-            'siteUrl'         => $site_url,
-            'pluginSecretKey' => $secret,
-        ) ),
-    ) );
-
-    if ( is_wp_error( $response ) ) {
-        return array(
-            'success' => false,
-            'message' => 'Connection failed: ' . $response->get_error_message(),
-        );
-    }
-
-    $code = wp_remote_retrieve_response_code( $response );
-    $body = json_decode( wp_remote_retrieve_body( $response ), true );
-
-    if ( 200 === $code && ! empty( $body['success'] ) ) {
-        return array(
-            'success' => true,
-            'message' => 'Disconnected from Acta.',
-        );
-    }
-
-    return array(
-        'success' => false,
-        'message' => $body['error'] ?? ( 'HTTP ' . $code ),
-    );
-}
-
-/**
  * Fetch publisher info (article price, rate limit) from Acta backend.
  *
  * @return array{ articlePrice: float, changesRemaining: int, revShare?: int }|null
@@ -632,40 +581,17 @@ function acta_settings_page() {
         }
     }
 
-    // Handle "Disconnect Acta" — pause without deleting the plugin.
-    if (
-        isset( $_POST['acta_action'] ) &&
-        $_POST['acta_action'] === 'disconnect' &&
-        check_admin_referer( 'acta_disconnect' )
-    ) {
-        $result = acta_disconnect_from_backend( $publisher_id, $secret, home_url() );
-
-        if ( $result['success'] ) {
-            // Keep the publisher id and secret. Acta kept the account, so
-            // reconnecting later is a single click rather than a fresh signup.
-            update_option( ACTA_CONNECTION_STATUS, 'disconnected' );
-            $conn_status = 'disconnected';
-            echo '<div class="notice notice-success"><p>' . esc_html__( 'Acta is disconnected. Your account and any balance owed are safe — reconnect any time.', 'acta-pay-per-article' ) . '</p></div>';
-        } else {
-            echo '<div class="notice notice-error"><p>' . esc_html( $result['message'] ) . '</p></div>';
+    // 4.2.0 briefly offered a "Disconnect Acta" button. The feature was removed
+    // in 4.2.1 because it could not change any settings, which is what people
+    // actually wanted it for. Any site left in the disconnected state is
+    // reconnected here, so it cannot be stranded on a screen that no longer
+    // exists. Harmless on every other install.
+    if ( 'disconnected' === $conn_status ) {
+        if ( ! empty( $publisher_id ) && ! empty( $secret ) ) {
+            acta_connect_to_backend( $publisher_id, $endpoint, $secret );
         }
-    }
-
-    // Handle "Reconnect Acta" — resume after a disconnect.
-    if (
-        isset( $_POST['acta_action'] ) &&
-        $_POST['acta_action'] === 'reconnect' &&
-        check_admin_referer( 'acta_reconnect' )
-    ) {
-        $result = acta_connect_to_backend( $publisher_id, rest_url( 'acta/v1/content' ), $secret );
-
-        if ( $result['success'] ) {
-            update_option( ACTA_CONNECTION_STATUS, 'live' );
-            $conn_status = 'live';
-            echo '<div class="notice notice-success"><p>' . esc_html__( 'Reconnected. Acta is live on your site again.', 'acta-pay-per-article' ) . '</p></div>';
-        } else {
-            echo '<div class="notice notice-error"><p>' . esc_html( $result['message'] ) . '</p></div>';
-        }
+        update_option( ACTA_CONNECTION_STATUS, 'live' );
+        $conn_status = 'live';
     }
 
     // ── Render the settings page ─────────────────────────────────────────────
@@ -867,32 +793,6 @@ function acta_settings_page() {
                     <p class="description">Replace <code>ENTER_PRICE_HERE</code> with the price (e.g. <code>2.99</code>). This overrides the default price for that article only.</p>
                 </div>
 
-                <div style="background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0;">Disconnect Acta</h3>
-                    <p style="margin: 0 0 12px;">Turns off the Acta button on your site. Your account, your Stripe details and any money owed to you are kept &mdash; you can reconnect any time without signing up again.</p>
-                    <p style="margin: 0 0 16px; color: #666;">Prefer this to deleting the plugin: deleting removes the settings stored on your site, and readers who already bought an article lose access to it.</p>
-                    <form method="post" action="">
-                        <?php wp_nonce_field( 'acta_disconnect' ); ?>
-                        <input type="hidden" name="acta_action" value="disconnect">
-                        <?php submit_button( 'Disconnect Acta', 'delete', 'submit', false, array( 'style' => 'color: #b32d2e; border-color: #b32d2e; background: #fff;' ) ); ?>
-                    </form>
-                </div>
-            </div>
-
-        <?php elseif ( $conn_status === 'disconnected' ) : ?>
-            <!-- ═══ STATE: DISCONNECTED — paused, everything retained ═══ -->
-            <div style="max-width: 600px; margin-top: 20px;">
-                <div style="background: #fcf9e8; border: 1px solid #dba617; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0;">Acta is disconnected</h3>
-                    <p style="margin: 0 0 8px;">The Acta button is not being shown on your site and no new purchases are being taken.</p>
-                    <p style="margin: 0;">Your account is intact &mdash; <strong>Publisher ID:</strong> <code style="font-size: 14px;"><?php echo esc_html( $publisher_id ); ?></code>. Any balance owed to you is unaffected.</p>
-                </div>
-
-                <form method="post" action="">
-                    <?php wp_nonce_field( 'acta_reconnect' ); ?>
-                    <input type="hidden" name="acta_action" value="reconnect">
-                    <?php submit_button( 'Reconnect Acta', 'primary large', 'submit', false ); ?>
-                </form>
             </div>
         <?php endif; ?>
 
@@ -907,13 +807,6 @@ add_action( 'wp_enqueue_scripts', 'acta_enqueue_frontend_script' );
 function acta_enqueue_frontend_script() {
     $publisher_id = get_option( ACTA_PUBLISHER_ID_KEY, '' );
     if ( empty( $publisher_id ) ) {
-        return;
-    }
-
-    // Disconnected sites keep their publisher id so they can reconnect in one
-    // click, so the id alone is not enough — check the status too, or a paused
-    // site would still load the script.
-    if ( 'disconnected' === get_option( ACTA_CONNECTION_STATUS, '' ) ) {
         return;
     }
 

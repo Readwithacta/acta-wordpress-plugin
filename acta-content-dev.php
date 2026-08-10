@@ -3,7 +3,7 @@
  * Plugin Name: Acta (Dev)
  * Plugin URI:  https://readwithacta.com
  * Description: DEV/STAGING version of Acta — points to the development backend with Stripe test keys. Do NOT use in production.
- * Version:     4.0.0-dev
+ * Version:     4.2.1-dev
  * Author:      Acta
  * Author URI:  https://readwithacta.com
  * License:     GPL-2.0+
@@ -71,7 +71,7 @@ add_filter( 'auto_update_plugin', function( $update, $item ) {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-define( 'ACTA_DEV_PLUGIN_VERSION', '4.0.0-dev' );
+define( 'ACTA_DEV_PLUGIN_VERSION', '4.2.1-dev' );
 define( 'ACTA_DEV_OPTION_KEY', 'acta_dev_secret_key' );
 define( 'ACTA_DEV_PUBLISHER_ID_KEY', 'acta_dev_publisher_id' );
 define( 'ACTA_DEV_STRIPE_URL_KEY', 'acta_dev_stripe_url' );
@@ -578,6 +578,16 @@ function acta_dev_settings_page() {
         }
     }
 
+    // 4.2.0 briefly offered a "Disconnect Acta" button, removed in 4.2.1.
+    // Reconnect anything left in that state so it cannot be stranded.
+    if ( 'disconnected' === $conn_status ) {
+        if ( ! empty( $publisher_id ) && ! empty( $secret ) ) {
+            acta_dev_connect_to_backend( $publisher_id, rest_url( 'acta-dev/v1/content' ), $secret );
+        }
+        update_option( ACTA_DEV_CONNECTION_STATUS, 'live' );
+        $conn_status = 'live';
+    }
+
     // ── Render the settings page ─────────────────────────────────────────────
     $countries          = acta_dev_get_supported_countries();
     $currencies         = acta_dev_get_supported_currencies();
@@ -804,6 +814,7 @@ function acta_dev_settings_page() {
                         </form>
                     </div>
                 </details>
+
             </div>
         <?php endif; ?>
 
@@ -821,6 +832,7 @@ function acta_dev_enqueue_frontend_script() {
         return;
     }
 
+    // Pre-load Stripe.js synchronously so it is defined before the Acta bundle runs.
     wp_enqueue_script( 'stripe-js', 'https://js.stripe.com/v3/', array(), null, false );
 
     $script_url = rtrim( ACTA_DEV_BACKEND_URL, '/' ) . '/api/v1/public/static/' . urlencode( $publisher_id ) . '.js';
