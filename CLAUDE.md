@@ -89,38 +89,52 @@ always show an older `Stable tag` than the latest release. That is expected.
 
 ---
 
-## 5. Release to WordPress.org (manual SVN)
+## 5. Release to WordPress.org
 
-Still manual, because CI produces the WP.org zip with the **wrong filenames** —
-`acta-content.php` inside `acta-content-wporg/`. WordPress.org rejects that
-(`nonstandard_main_filename`); the main file must equal the slug.
-
-Working copy: `../../acta-pay-per-article` (sibling of `acta-project`).
+Wait for the CI build from step 4 to finish, then:
 
 ```bash
-cd /Users/guillermoolaizola/Documents/Acta/Development/acta-pay-per-article && svn up
+./release-wporg.sh
 ```
 
-Then:
+That is the whole step. It reads the version from `acta-content.php`, downloads
+the release zip, renames the main file to match the slug, undoes CI's CalVer
+stamp, copies everything into the SVN working copy, commits trunk, and only then
+creates the tag. It prints a summary and asks before touching WordPress.org.
 
-1. Download `acta-content-wporg.zip` from the GitHub release and unzip it.
-2. Rename the main file `acta-content.php` → `acta-pay-per-article.php`.
-3. Copy the contents into `trunk/`, replacing what is there.
-4. Set `Version:` + `ACTA_PLUGIN_VERSION` in the PHP file and `Stable tag:` in
-   `trunk/readme.txt` to the **semver** number (see versioning below) — they must
-   match the tag you are about to create.
-5. Tag and commit:
+The SVN checkout is expected at `../../acta-pay-per-article`; override with
+`ACTA_SVN_DIR` if it lives elsewhere.
 
-```bash
-svn cp trunk tags/<version> && svn ci -m "Release <version>"
-```
+### Why the script exists
 
-**Never put banners, icons or `screenshot-*.png` in `trunk`.** They live in the SVN
-`assets/` directory only, and including them in the plugin gets the release flagged.
+Doing this by hand broke the 4.2.0 release in three ways at once:
+
+- `svn cp trunk tags/4.2.0` ran **before** trunk was updated, so the tag captured
+  4.1.0's code
+- the destination already existed, and `svn cp` nests instead of replacing —
+  producing `tags/4.2.0/trunk/`
+- `Stable tag` still said `4.1.0`, so WordPress.org kept serving the old version
+  and no update ever appeared in publishers' dashboards
+
+### What it checks before publishing
+
+- the release zip matches your local `acta-content.php` (ignoring version stamps),
+  so a stale or still-building release cannot be shipped
+- no `screenshot-*` / `banner-*` / `icon-*` files in the package — including them
+  got the original submission rejected
+- `tags/<version>` does not already exist
+- trunk actually changed; if nothing did it stops rather than tagging a no-op
+
+### Manual fallback
+
+If the script cannot run, the order is what matters: **update trunk → commit
+trunk → copy the tag → commit the tag.** Never create the tag first, and never
+copy onto a tag that already exists.
 
 `readme.txt` drives the public WordPress.org page — `Stable tag`, `Requires at
 least`, `Tested up to` and the `== Changelog ==` section all render from it.
-
+Banners, icons and screenshots belong in the SVN `assets/` directory only, never
+in `trunk`.
 ---
 
 ## 6. Versioning
@@ -147,9 +161,25 @@ permanently switch the public listing to CalVer. Avoid that unless deliberate.
 
 ---
 
-## 8. State as of 2026-08-06
+## 8. Full release, start to finish
 
-- Production `acta-content.php` and SVN `trunk/` are both **4.1.0** and in sync
-  (verified: zero diff after the strip pass).
-- SVN tags: `4.0.0`, `4.1.0`. Working copy clean.
-- Next WordPress.org release would be `4.2.0`.
+```bash
+# 1. commit the change (versions already bumped in acta-content.php + readme.txt)
+git add acta-content.php acta-content-dev.php readme.txt CHANGELOG.md && git commit -m "Release X.Y.Z: ..."
+
+# 2. direct distribution — CI builds and publishes
+git push origin develop:main
+
+# 3. wait ~2 min for CI, then WordPress.org
+./release-wporg.sh
+```
+
+## 9. State as of 2026-08-10
+
+- `4.2.0` shipped to both channels. It added a "Disconnect Acta" button that was
+  removed again in `4.2.1` — it could not edit any settings, which is what
+  publishers reach for, so it was a confusing option that solved nothing. The
+  uninstall notification from the same release was kept.
+- The 4.2.0 WordPress.org release was published incorrectly and had to be redone;
+  `release-wporg.sh` was written in response. See section 5.
+- SVN tags: `4.0.0`, `4.1.0`, `4.2.0`.
